@@ -1,0 +1,129 @@
+[
+  {
+    "name": "initial_solar_addition",
+    "scenario_name": "capacity_expansion",
+    "timestamp": "2024-01-15T00:00:00",
+    "additions": [
+      {
+        "uuid": "aaaa0001-0001-0001-0001-000000000001",
+        "type": "DistributionSolar",
+        "name": "pv_new_p5rlv265",
+        "bus": "p5rlv265",
+        "phases": ["A", "B", "C"]
+      }
+    ],
+    "edits": [],
+    "deletions": []
+  },
+  {
+    "name": "load_increase_q1",
+    "scenario_name": "capacity_expansion",
+    "timestamp": "2024-04-01T00:00:00",
+    "additions": [],
+    "edits": [
+      {
+        "component_uuid": "63f845bc-05f5-4c08-a804-75da5316442f",
+        "component_name": "load_p5rlv40",
+        "component_type": "DistributionLoad",
+        "field": "name",
+        "old_value": "load_p5rlv40",
+        "new_value": "load_p5rlv40_upgraded"
+      }
+    ],
+    "deletions": []
+  },
+  {
+    "name": "battery_and_solar_q3",
+    "scenario_name": "capacity_expansion",
+    "timestamp": "2024-07-01T00:00:00",
+    "additions": [
+      {
+        "uuid": "aaaa0002-0002-0002-0002-000000000002",
+        "type": "DistributionBattery",
+        "name": "batt_p5rlv40",
+        "bus": "p5rlv40",
+        "phases": ["A", "B", "C"]
+      },
+      {
+        "uuid": "aaaa0003-0003-0003-0003-000000000003",
+        "type": "DistributionSolar",
+        "name": "pv_new_p5rdt22lv",
+        "bus": "p5rdt22lv",
+        "phases": ["A", "B", "C"]
+      }
+    ],
+    "edits": [],
+    "deletions": []
+  },
+  {
+    "name": "switch_removal",
+    "scenario_name": "capacity_expansion",
+    "timestamp": "2024-10-01T00:00:00",
+    "additions": [],
+    "edits": [],
+    "deletions": [
+      {
+        "uuid": "b1e6ae39-e7c1-4ca3-966b-14823b91e3d0",
+        "component_name": "l(r:p5rdt149-p5rhs0_1247)_disconnect",
+        "component_type": "MatrixImpedanceSwitch",
+        "bus": "p5rdt149-p5rhs0_1247x"
+      }
+    ]
+  },
+  {
+    "name": "new_branch_and_bus",
+    "scenario_name": "capacity_expansion",
+    "timestamp": "2025-01-15T00:00:00",
+    "additions": [
+      {
+        "uuid": "aaaa0004-0004-0004-0004-000000000004",
+        "type": "DistributionBus",
+        "name": "p5rlv_new_feeder",
+        "location": {"x": 36.577, "y": -120.948},
+        "phases": ["A", "B", "C"]
+      },
+      {
+        "uuid": "aaaa0005-0005-0005-0005-000000000005",
+        "type": "MatrixImpedanceBranch",
+        "name": "l(r:p5rdt149lv-p5rlv_new_feeder)",
+        "bus1": "p5rdt149lv",
+        "bus2": "p5rlv_new_feeder",
+        "phases": ["A", "B", "C"]
+      },
+      {
+        "uuid": "aaaa0006-0006-0006-0006-000000000006",
+        "type": "DistributionLoad",
+        "name": "load_new_feeder",
+        "bus": "p5rlv_new_feeder",
+        "phases": ["A", "B", "C"]
+      }
+    ],
+    "edits": [],
+    "deletions": []
+  },
+  {
+    "name": "transformer_edit_and_solar",
+    "scenario_name": "capacity_expansion",
+    "timestamp": "2025-06-01T00:00:00",
+    "additions": [
+      {
+        "uuid": "aaaa0007-0007-0007-0007-000000000007",
+        "type": "DistributionSolar",
+        "name": "pv_new_feeder",
+        "bus": "p5rlv_new_feeder",
+        "phases": ["A", "B", "C"]
+      }
+    ],
+    "edits": [
+      {
+        "component_uuid": "3636c72d-0b49-4d9b-ace4-6a1b06a6d133",
+        "component_name": "tr(r:p5rdt149-p5rdt149lv)",
+        "component_type": "DistributionTransformer",
+        "field": "name",
+        "old_value": "tr(r:p5rdt149-p5rdt149lv)",
+        "new_value": "tr(r:p5rdt149-p5rdt149lv)_upgraded"
+      }
+    ],
+    "deletions": []
+  }
+]

@@ -31,6 +31,10 @@
           <i class="ri-road-map-line"></i>
           <span>Network</span>
         </a>
+        <a href="#" class="nav-item" data-page="scenarios">
+          <i class="ri-time-line"></i>
+          <span>Scenarios</span>
+        </a>
       </nav>
       <div class="sidebar-footer">
         <div class="system-badge" id="systemBadge" style="display:none">
@@ -181,6 +185,63 @@
           </div>
         </div>
       </div>
+      <!-- Page: Scenarios -->
+      <div class="page" id="page-scenarios">
+        <div class="scenario-container">
+          <div class="scenario-map-wrap">
+            <div id="scenarioMap"></div>
+            <div class="scenario-map-toolbar">
+              <button class="map-tool-btn" id="scenarioFitBtn" title="Fit to bounds"><i class="ri-fullscreen-line"></i></button>
+              <button class="map-tool-btn active" id="scenarioToggleLabels" title="Toggle labels"><i class="ri-price-tag-3-line"></i></button>
+              <div class="map-legend">
+                <span class="legend-item"><span class="legend-dot" style="background:#5b67f5"></span>Bus</span>
+                <span class="legend-item"><span class="legend-line" style="background:#6fcf6f"></span>Branch</span>
+                <span class="legend-item"><span class="legend-dot" style="background:#4ade80"></span>Added</span>
+                <span class="legend-item"><span class="legend-dot" style="background:#f87171"></span>Deleted</span>
+                <span class="legend-item"><span class="legend-dot" style="background:#fbbf24"></span>Edited</span>
+              </div>
+            </div>
+            <div class="scenario-empty-state" id="scenarioEmptyState">
+              <i class="ri-time-line"></i>
+              <h3>No scenario loaded</h3>
+              <p>Load a GDM system and a tracked changes JSON to visualize network evolution.</p>
+              <button class="btn btn-outline" id="scenarioLoadBtn">
+                <i class="ri-upload-2-line"></i> Load Tracked Changes
+              </button>
+              <input type="file" id="scenarioFileInput" accept=".json" hidden />
+            </div>
+          </div>
+          <div class="timeline-bar" id="timelineBar" style="display:none">
+            <div class="timeline-controls">
+              <button class="timeline-btn" id="timelinePrev" title="Previous step"><i class="ri-skip-back-mini-fill"></i></button>
+              <button class="timeline-btn" id="timelinePlay" title="Play/Pause"><i class="ri-play-fill"></i></button>
+              <button class="timeline-btn" id="timelineNext" title="Next step"><i class="ri-skip-forward-mini-fill"></i></button>
+            </div>
+            <div class="timeline-slider-wrap">
+              <input type="range" class="timeline-slider" id="timelineSlider" min="0" max="1" step="1" value="0" />
+              <div class="timeline-ticks" id="timelineTicks"></div>
+            </div>
+            <div class="timeline-info">
+              <span class="timeline-date" id="timelineDate">Base</span>
+              <span class="timeline-scenario" id="timelineScenario"></span>
+            </div>
+            <div class="timeline-stats" id="timelineStats">
+              <span class="stat-badge stat-add"><i class="ri-add-line"></i> <span id="statAdded">0</span></span>
+              <span class="stat-badge stat-del"><i class="ri-subtract-line"></i> <span id="statDeleted">0</span></span>
+              <span class="stat-badge stat-edit"><i class="ri-edit-line"></i> <span id="statEdited">0</span></span>
+            </div>
+          </div>
+          <div class="scenario-side-panel" id="scenarioPanel" style="display:none">
+            <div class="panel-section">
+              <div class="panel-header">
+                <h3>Change Log</h3>
+                <span class="panel-hint" id="changeLogHint">0 changes</span>
+              </div>
+              <div class="change-log-list" id="changeLogList"></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </main>
   </div>
 
@@ -235,5 +296,6 @@
   <script src="schemas.js"></script>
   <script src="app.js"></script>
   <script src="network.js"></script>
+  <script src="scenarios.js"></script>
 </body>
 </html>
