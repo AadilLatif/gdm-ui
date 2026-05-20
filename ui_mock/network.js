@@ -49,12 +49,7 @@ function initNetworkMap() {
   }
 
   // Detail panel buttons
-  const editBtn = document.getElementById("detailEditBtn");
-  if (editBtn) editBtn.addEventListener("click", editSelectedComponent);
-  const deleteBtn = document.getElementById("detailDeleteBtn");
-  if (deleteBtn) deleteBtn.addEventListener("click", deleteSelectedComponent);
-  const closeBtn = document.getElementById("detailCloseBtn");
-  if (closeBtn) closeBtn.addEventListener("click", closeDetailPanel);
+  // (Now handled via popup onclick attributes)
 
   // Make map a drop target for palette items
   const mapEl = document.getElementById("networkMap");
@@ -239,8 +234,8 @@ function renderNetwork() {
       { color, weight, opacity: 0.8, dashArray }
     ).addTo(networkState.map);
 
-    line.on("click", () => {
-      selectNetworkComponent("edge", edge);
+    line.on("click", (e) => {
+      selectNetworkComponent("edge", edge, e.latlng);
     });
 
     line.bindTooltip(
@@ -273,8 +268,8 @@ function renderNetwork() {
 
     const marker = L.marker([bus.lat, bus.lng], { icon: busIcon }).addTo(networkState.map);
 
-    marker.on("click", () => {
-      selectNetworkComponent("bus", bus);
+    marker.on("click", (e) => {
+      selectNetworkComponent("bus", bus, e.latlng);
     });
 
     // Make bus a drop target
@@ -344,8 +339,8 @@ function renderNetwork() {
     });
 
     const compMarker = L.marker([lat, lng], { icon: compIcon }).addTo(networkState.map);
-    compMarker.on("click", () => {
-      selectNetworkComponent("node", nc);
+    compMarker.on("click", (e) => {
+      selectNetworkComponent("node", nc, e.latlng);
     });
 
     // Draw a thin line from component to its bus
@@ -414,58 +409,61 @@ function toggleBusLabels() {
   }
 }
 
-// ===== Select & Inspect Component =====
-function selectNetworkComponent(kind, item) {
-  const panel = document.getElementById("networkDetailSection");
-  const title = document.getElementById("detailTitle");
-  const body = document.getElementById("detailBody");
-  if (!panel || !title || !body) return;
-
-  panel.style.display = "block";
+// ===== Select & Inspect Component via Map Popup =====
+function selectNetworkComponent(kind, item, latlng) {
   networkState.selectedComponent = { kind, item };
 
+  // Determine popup position
+  let popupLatLng = latlng;
+  if (!popupLatLng) {
+    if (kind === "bus" && item.lat != null) {
+      popupLatLng = [item.lat, item.lng];
+    } else if (kind === "node") {
+      const bus = networkState.buses.find(b => b.name === item.busName);
+      if (bus) popupLatLng = [bus.lat, bus.lng];
+    } else if (kind === "edge") {
+      const b1 = networkState.buses.find(b => b.name === item.bus1);
+      const b2 = networkState.buses.find(b => b.name === item.bus2);
+      if (b1 && b2) popupLatLng = [(b1.lat + b2.lat) / 2, (b1.lng + b2.lng) / 2];
+    }
+  }
+  if (!popupLatLng) return;
+
+  let headerHtml = "";
+  let bodyHtml = "";
+
   if (kind === "bus") {
-    title.innerHTML = `<i class="${COMPONENT_ICONS.DistributionBus}" style="margin-right:6px;color:#5b67f5"></i>${escapeHtml(item.name)}`;
+    const icon = COMPONENT_ICONS.DistributionBus;
+    headerHtml = `<i class="${icon}" style="color:#5b67f5"></i><span>${escapeHtml(item.name)}</span>`;
 
     const phasesStr = (item.phases || []).join(", ");
     const rvDisplay = item.ratedVoltage
       ? `${formatNumber(item.ratedVoltage.value)}<span class="unit">${item.ratedVoltage.unit}</span>`
       : "—";
 
-    // List attached components
-    const attached = networkState.nodeComponents.filter(nc => nc.busName === item.name);
-    let attachedHtml = "";
-    if (attached.length > 0) {
-      attachedHtml = `<div style="margin-top:12px"><div class="field-label" style="margin-bottom:8px">CONNECTED COMPONENTS</div>`;
-      for (const nc of attached) {
-        const icon = COMPONENT_ICONS[nc.type] || "ri-box-3-line";
-        attachedHtml += `<div class="field-item" style="margin-bottom:4px;cursor:pointer" data-click-comp="${nc.name}" data-click-kind="node"><i class="${icon}" style="margin-right:6px;color:#7c8aff"></i>${escapeHtml(nc.name)} <span style="color:#6b7084;font-size:0.75rem">(${COMPONENT_SCHEMAS[nc.type]?.label || nc.type})</span></div>`;
-      }
-      attachedHtml += `</div>`;
-    }
-
-    body.innerHTML = `
-      <div class="field-grid">
+    bodyHtml = `
+      <div class="popup-body"><div class="field-grid">
         <div class="field-item"><div class="field-label">Type</div><div class="field-value">Distribution Bus</div></div>
         <div class="field-item"><div class="field-label">Voltage Type</div><div class="field-value" style="color:#a8b0ff">${item.voltageType || "—"}</div></div>
         <div class="field-item"><div class="field-label">Phases</div><div class="field-value">${phasesStr || "—"}</div></div>
         <div class="field-item"><div class="field-label">Rated Voltage</div><div class="field-value">${rvDisplay}</div></div>
-        <div class="field-item"><div class="field-label">Latitude</div><div class="field-value">${item.lat != null ? formatNumber(item.lat) : "—"}</div></div>
-        <div class="field-item"><div class="field-label">Longitude</div><div class="field-value">${item.lng != null ? formatNumber(item.lng) : "—"}</div></div>
-      </div>
-      ${attachedHtml}
-    `;
+        <div class="field-item"><div class="field-label">Coordinates</div><div class="field-value">${item.lat != null ? formatNumber(item.lat) : "—"}, ${item.lng != null ? formatNumber(item.lng) : "—"}</div></div>
+      </div></div>`;
 
-    // Click handlers for attached components
-    body.querySelectorAll("[data-click-comp]").forEach(el => {
-      el.addEventListener("click", () => {
-        const nc = networkState.nodeComponents.find(c => c.name === el.dataset.clickComp);
-        if (nc) selectNetworkComponent("node", nc);
-      });
-    });
+    // Attached components
+    const attached = networkState.nodeComponents.filter(nc => nc.busName === item.name);
+    if (attached.length > 0) {
+      bodyHtml += `<div class="popup-connected"><div class="field-label">CONNECTED COMPONENTS</div>`;
+      for (const nc of attached) {
+        const ncIcon = COMPONENT_ICONS[nc.type] || "ri-box-3-line";
+        bodyHtml += `<div class="popup-connected-item" data-click-comp="${escapeHtml(nc.name)}"><i class="${ncIcon}"></i>${escapeHtml(nc.name)}<span class="popup-comp-type">${COMPONENT_SCHEMAS[nc.type]?.label || nc.type}</span></div>`;
+      }
+      bodyHtml += `</div>`;
+    }
 
   } else if (kind === "edge") {
-    title.innerHTML = `<i class="${COMPONENT_ICONS[item.type] || "ri-git-branch-line"}" style="margin-right:6px;color:#5b67f5"></i>${escapeHtml(item.name)}`;
+    const icon = COMPONENT_ICONS[item.type] || "ri-git-branch-line";
+    headerHtml = `<i class="${icon}" style="color:#5b67f5"></i><span>${escapeHtml(item.name)}</span>`;
 
     const phasesStr = (item.phases || []).join(", ");
     const lengthDisplay = item.length
@@ -475,35 +473,68 @@ function selectNetworkComponent(kind, item) {
       ? (Array.isArray(item.isClosed) ? item.isClosed.map(v => v ? "Closed" : "Open").join(", ") : String(item.isClosed))
       : "—";
 
-    body.innerHTML = `
-      <div class="field-grid">
+    bodyHtml = `
+      <div class="popup-body"><div class="field-grid">
         <div class="field-item"><div class="field-label">Type</div><div class="field-value">${COMPONENT_SCHEMAS[item.type]?.label || item.type}</div></div>
         <div class="field-item"><div class="field-label">From Bus</div><div class="field-value">${escapeHtml(item.bus1 || "—")}</div></div>
         <div class="field-item"><div class="field-label">To Bus</div><div class="field-value">${escapeHtml(item.bus2 || "—")}</div></div>
         <div class="field-item"><div class="field-label">Phases</div><div class="field-value">${phasesStr || "—"}</div></div>
         <div class="field-item"><div class="field-label">Length</div><div class="field-value">${lengthDisplay}</div></div>
         <div class="field-item"><div class="field-label">Status</div><div class="field-value">${closedStr}</div></div>
-      </div>
-    `;
+      </div></div>`;
 
   } else if (kind === "node") {
-    title.innerHTML = `<i class="${COMPONENT_ICONS[item.type] || "ri-box-3-line"}" style="margin-right:6px;color:#5b67f5"></i>${escapeHtml(item.name)}`;
+    const icon = COMPONENT_ICONS[item.type] || "ri-box-3-line";
+    headerHtml = `<i class="${icon}" style="color:#5b67f5"></i><span>${escapeHtml(item.name)}</span>`;
 
     const phasesStr = (item.phases || []).join(", ");
 
-    body.innerHTML = `
-      <div class="field-grid">
+    bodyHtml = `
+      <div class="popup-body"><div class="field-grid">
         <div class="field-item"><div class="field-label">Type</div><div class="field-value">${COMPONENT_SCHEMAS[item.type]?.label || item.type}</div></div>
         <div class="field-item"><div class="field-label">Bus</div><div class="field-value">${escapeHtml(item.busName || "—")}</div></div>
         <div class="field-item"><div class="field-label">Phases</div><div class="field-value">${phasesStr || "—"}</div></div>
-      </div>
-    `;
+      </div></div>`;
   }
+
+  const popupContent = `
+    <div class="popup-header">
+      <div class="popup-title">${headerHtml}</div>
+      <div class="popup-actions">
+        <button class="btn-icon" onclick="editSelectedComponent()" title="Edit"><i class="ri-edit-line"></i></button>
+        <button class="btn-icon danger" onclick="deleteSelectedComponent()" title="Delete"><i class="ri-delete-bin-line"></i></button>
+      </div>
+    </div>
+    ${bodyHtml}
+  `;
+
+  const popup = L.popup({
+    className: "network-popup",
+    closeButton: false,
+    maxWidth: 360,
+    minWidth: 260,
+    autoPan: true,
+  })
+    .setLatLng(popupLatLng)
+    .setContent(popupContent)
+    .openOn(networkState.map);
+
+  // Bind click handlers for connected component items
+  setTimeout(() => {
+    document.querySelectorAll(".popup-connected-item[data-click-comp]").forEach(el => {
+      el.addEventListener("click", () => {
+        const nc = networkState.nodeComponents.find(c => c.name === el.dataset.clickComp);
+        if (nc) {
+          networkState.map.closePopup();
+          selectNetworkComponent("node", nc);
+        }
+      });
+    });
+  }, 50);
 }
 
 function closeDetailPanel() {
-  const panel = document.getElementById("networkDetailSection");
-  if (panel) panel.style.display = "none";
+  if (networkState.map) networkState.map.closePopup();
   networkState.selectedComponent = null;
 }
 
