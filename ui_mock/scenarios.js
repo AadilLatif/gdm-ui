@@ -51,7 +51,7 @@ function initScenarioMap() {
     attributionControl: false,
   });
 
-  L.control.zoom({ position: "bottomright" }).addTo(scenarioState.map);
+  L.control.zoom({ position: "bottomleft" }).addTo(scenarioState.map);
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19,

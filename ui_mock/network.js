@@ -26,9 +26,11 @@ function initNetworkMap() {
   networkState.map = L.map("networkMap", {
     center: [36.58, -120.95],
     zoom: 13,
-    zoomControl: true,
+    zoomControl: false,
     attributionControl: false,
   });
+
+  L.control.zoom({ position: "bottomleft" }).addTo(networkState.map);
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19,
