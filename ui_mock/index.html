@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GDM Studio</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+  <div id="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <i class="ri-flashlight-line"></i>
+        <span>GDM Studio</span>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-item active" data-page="model-loader">
+          <i class="ri-file-upload-line"></i>
+          <span>Load Model</span>
+        </a>
+        <a href="#" class="nav-item" data-page="warehouse">
+          <i class="ri-archive-2-line"></i>
+          <span>Warehouse</span>
+        </a>
+        <a href="#" class="nav-item" data-page="network">
+          <i class="ri-road-map-line"></i>
+          <span>Network</span>
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="system-badge" id="systemBadge" style="display:none">
+          <i class="ri-checkbox-circle-line"></i>
+          <span id="systemName">No system loaded</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Page: Model Loader -->
+      <div class="page active" id="page-model-loader">
+        <header class="page-header">
+          <h1>Load Distribution System</h1>
+          <p class="subtitle">Import a GDM distribution system model from JSON</p>
+        </header>
+        <div class="loader-content">
+          <div class="upload-zone" id="uploadZone">
+            <div class="upload-icon">
+              <i class="ri-upload-cloud-2-line"></i>
+            </div>
+            <h3>Drop a GDM JSON file here</h3>
+            <p>or click to browse</p>
+            <input type="file" id="fileInput" accept=".json" hidden />
+            <button class="btn btn-outline" id="browseBtn">Browse Files</button>
+            <div class="upload-hint">
+              <span>Example: <code>tests/dataset/p5r/p5r.json</code></span>
+            </div>
+          </div>
+
+          <!-- System summary after load -->
+          <div class="system-summary" id="systemSummary" style="display:none">
+            <div class="summary-header">
+              <h2 id="summaryTitle">System Loaded</h2>
+              <div class="summary-actions">
+                <button class="btn btn-primary" id="goToWarehouse">
+                  <i class="ri-archive-2-line"></i> Open Warehouse
+                </button>
+                <button class="btn btn-outline btn-danger" id="unloadBtn">
+                  <i class="ri-close-line"></i> Unload
+                </button>
+              </div>
+            </div>
+            <div class="stats-grid" id="statsGrid"></div>
+            <div class="component-table-wrap">
+              <h3>Equipment Inventory</h3>
+              <table class="data-table" id="inventoryTable">
+                <thead>
+                  <tr>
+                    <th>Equipment Type</th>
+                    <th>Count</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="inventoryBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Page: Warehouse -->
+      <div class="page" id="page-warehouse">
+        <header class="page-header">
+          <div class="page-header-row">
+            <div>
+              <h1>Equipment Warehouse</h1>
+              <p class="subtitle">Browse, add, edit, and delete distribution equipment</p>
+            </div>
+            <button class="btn btn-primary" id="addEquipmentBtn">
+              <i class="ri-add-line"></i> Add Equipment
+            </button>
+          </div>
+        </header>
+
+        <!-- Category tabs -->
+        <div class="category-tabs" id="categoryTabs"></div>
+
+        <!-- Equipment list -->
+        <div class="equipment-list" id="equipmentList">
+          <div class="empty-state" id="warehouseEmpty">
+            <i class="ri-archive-drawer-line"></i>
+            <h3>No equipment loaded</h3>
+            <p>Load a GDM system first, or add equipment manually.</p>
+          </div>
+        </div>
+      </div>
+      <!-- Page: Network -->
+      <div class="page" id="page-network">
+        <div class="network-container">
+          <div class="network-map-wrap">
+            <div id="networkMap"></div>
+            <div class="map-toolbar">
+              <button class="map-tool-btn" id="mapFitBtn" title="Fit to bounds"><i class="ri-fullscreen-line"></i></button>
+              <button class="map-tool-btn" id="mapToggleLabels" title="Toggle labels"><i class="ri-price-tag-3-line"></i></button>
+              <div class="map-legend">
+                <span class="legend-item"><span class="legend-dot" style="background:#5b67f5"></span>Bus</span>
+                <span class="legend-item"><span class="legend-line" style="background:#6fcf6f"></span>Branch</span>
+                <span class="legend-item"><span class="legend-dot" style="background:#f0a030"></span>Transformer</span>
+                <span class="legend-item"><span class="legend-dot" style="background:#e54d4d"></span>Switch</span>
+              </div>
+            </div>
+            <div class="map-empty-state" id="networkEmptyState">
+              <i class="ri-road-map-line"></i>
+              <h3>No network loaded</h3>
+              <p>Load a GDM system to view the network topology on the map.</p>
+            </div>
+          </div>
+          <div class="network-panel" id="networkPanel">
+            <div class="panel-section">
+              <div class="panel-header">
+                <h3>Components</h3>
+                <span class="panel-hint">Drag to a bus node</span>
+              </div>
+              <div class="component-palette" id="componentPalette">
+                <div class="palette-category">
+                  <div class="palette-category-title">Loads & DER</div>
+                  <div class="palette-item" draggable="true" data-comp-type="DistributionLoad"><i class="ri-flashlight-fill"></i><span>Load</span></div>
+                  <div class="palette-item" draggable="true" data-comp-type="DistributionSolar"><i class="ri-sun-line"></i><span>Solar</span></div>
+                  <div class="palette-item" draggable="true" data-comp-type="DistributionBattery"><i class="ri-battery-2-line"></i><span>Battery</span></div>
+                  <div class="palette-item" draggable="true" data-comp-type="DistributionCapacitor"><i class="ri-battery-charge-line"></i><span>Capacitor</span></div>
+                </div>
+                <div class="palette-category">
+                  <div class="palette-category-title">Sources</div>
+                  <div class="palette-item" draggable="true" data-comp-type="DistributionVoltageSource"><i class="ri-plug-2-line"></i><span>Voltage Source</span></div>
+                </div>
+                <div class="palette-category">
+                  <div class="palette-category-title">Branches</div>
+                  <div class="palette-item" draggable="true" data-comp-type="MatrixImpedanceBranch"><i class="ri-git-branch-line"></i><span>Impedance Branch</span></div>
+                  <div class="palette-item" draggable="true" data-comp-type="SequenceImpedanceBranch"><i class="ri-git-merge-line"></i><span>Seq. Branch</span></div>
+                  <div class="palette-item" draggable="true" data-comp-type="GeometryBranch"><i class="ri-shape-line"></i><span>Geometry Branch</span></div>
+                </div>
+                <div class="palette-category">
+                  <div class="palette-category-title">Protection</div>
+                  <div class="palette-item" draggable="true" data-comp-type="MatrixImpedanceFuse"><i class="ri-shield-flash-line"></i><span>Fuse</span></div>
+                  <div class="palette-item" draggable="true" data-comp-type="MatrixImpedanceRecloser"><i class="ri-restart-line"></i><span>Recloser</span></div>
+                  <div class="palette-item" draggable="true" data-comp-type="MatrixImpedanceSwitch"><i class="ri-toggle-line"></i><span>Switch</span></div>
+                </div>
+                <div class="palette-category">
+                  <div class="palette-category-title">Infrastructure</div>
+                  <div class="palette-item" draggable="true" data-comp-type="DistributionTransformer"><i class="ri-swap-box-line"></i><span>Transformer</span></div>
+                  <div class="palette-item" draggable="true" data-comp-type="DistributionBus"><i class="ri-circle-line"></i><span>Bus</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="panel-divider"></div>
+            <div class="panel-section" id="networkDetailSection" style="display:none">
+              <div class="panel-header">
+                <h3 id="detailTitle">Component Details</h3>
+                <div class="detail-actions">
+                  <button class="btn-icon" id="detailEditBtn" title="Edit"><i class="ri-edit-line"></i></button>
+                  <button class="btn-icon danger" id="detailDeleteBtn" title="Delete"><i class="ri-delete-bin-line"></i></button>
+                  <button class="btn-icon" id="detailCloseBtn" title="Close"><i class="ri-close-line"></i></button>
+                </div>
+              </div>
+              <div id="detailBody"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal overlay -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal" id="modal">
+      <div class="modal-header">
+        <h2 id="modalTitle">Edit Equipment</h2>
+        <button class="modal-close" id="modalClose"><i class="ri-close-line"></i></button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" id="modalCancel">Cancel</button>
+        <button class="btn btn-primary" id="modalSave">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Equipment Type Picker Modal -->
+  <div class="modal-overlay" id="typePickerOverlay">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <h2>Select Equipment Type</h2>
+        <button class="modal-close" id="typePickerClose"><i class="ri-close-line"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="type-picker-grid" id="typePickerGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete confirmation modal -->
+  <div class="modal-overlay" id="deleteOverlay">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <h2>Confirm Delete</h2>
+        <button class="modal-close" id="deleteClose"><i class="ri-close-line"></i></button>
+      </div>
+      <div class="modal-body">
+        <p id="deleteMessage">Are you sure you want to delete this equipment?</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" id="deleteCancelBtn">Cancel</button>
+        <button class="btn btn-danger" id="deleteConfirmBtn">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="schemas.js"></script>
+  <script src="app.js"></script>
+  <script src="network.js"></script>
+</body>
+</html>
