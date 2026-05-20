@@ -47,9 +47,11 @@ function initScenarioMap() {
   scenarioState.map = L.map("scenarioMap", {
     center: [36.58, -120.95],
     zoom: 13,
-    zoomControl: true,
+    zoomControl: false,
     attributionControl: false,
   });
+
+  L.control.zoom({ position: "bottomright" }).addTo(scenarioState.map);
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19,
