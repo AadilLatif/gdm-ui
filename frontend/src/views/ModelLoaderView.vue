@@ -6,9 +6,9 @@
     </header>
 
     <div class="loader-content">
-      <!-- Upload Zone -->
+      <!-- Upload Zone (shown only when no projects exist) -->
       <div
-        v-if="!projectStore.activeProject"
+        v-if="!projectStore.projects.length"
         class="upload-zone"
         :class="{ dragover }"
         @click="fileInput?.click()"
@@ -25,6 +25,8 @@
           <span>Upload a <code>.zip</code> containing the system JSON and time_series folder</span>
         </div>
       </div>
+      <!-- Hidden file input for when upload zone isn't shown -->
+      <input v-if="projectStore.projects.length" ref="fileInput" type="file" accept=".zip" hidden @change="handleFileSelect" />
 
       <!-- Loading -->
       <div v-if="uploading" style="text-align:center;padding:40px">
@@ -32,50 +34,14 @@
         <p style="color:#6b7084">Uploading and loading model...</p>
       </div>
 
-      <!-- System Summary -->
-      <div v-if="projectStore.activeProject && projectStore.summary" class="system-summary">
-        <div class="summary-header">
-          <h2>{{ projectStore.activeProject.name }}</h2>
-          <div class="summary-actions">
-            <button class="btn btn-primary" @click="$router.push('/warehouse')">
-              <i class="ri-archive-2-line"></i> Open Warehouse
-            </button>
-          </div>
+      <!-- Existing Projects (moved above summary) -->
+      <div v-if="projectStore.projects.length > 0">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <h3 style="color:#c5c9dd;margin:0">Your Models</h3>
+          <button class="btn btn-sm btn-outline" @click="fileInput?.click()">
+            <i class="ri-upload-cloud-2-line"></i> Upload New Model
+          </button>
         </div>
-
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-value">{{ projectStore.summary.total_components }}</div>
-            <div class="stat-label">Total Components</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value">{{ Object.keys(projectStore.summary.component_types).length }}</div>
-            <div class="stat-label">Component Types</div>
-          </div>
-        </div>
-
-        <div class="component-table-wrap">
-          <h3>Component Inventory</h3>
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Component Type</th>
-                <th>Count</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(count, type) in projectStore.summary.component_types" :key="type">
-                <td><span class="type-badge">{{ type }}</span></td>
-                <td><span class="count-badge">{{ count }}</span></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Existing Projects -->
-      <div v-if="projectStore.projects.length > 0" style="margin-top:32px">
-        <h3 style="color:#c5c9dd;margin-bottom:12px">Your Models</h3>
         <div class="project-grid">
           <div
             v-for="project in projectStore.projects"
@@ -117,6 +83,47 @@
               Created {{ new Date(project.created_at).toLocaleDateString() }}
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- System Summary -->
+      <div v-if="projectStore.activeProject && projectStore.summary" class="system-summary" style="margin-top:32px">
+        <div class="summary-header">
+          <h2>{{ projectStore.activeProject.name }}</h2>
+          <div class="summary-actions">
+            <button class="btn btn-primary" @click="$router.push('/warehouse')">
+              <i class="ri-archive-2-line"></i> Open Warehouse
+            </button>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value">{{ projectStore.summary.total_components }}</div>
+            <div class="stat-label">Total Components</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">{{ Object.keys(projectStore.summary.component_types).length }}</div>
+            <div class="stat-label">Component Types</div>
+          </div>
+        </div>
+
+        <div class="component-table-wrap">
+          <h3>Component Inventory</h3>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Component Type</th>
+                <th>Count</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(count, type) in projectStore.summary.component_types" :key="type">
+                <td><span class="type-badge">{{ type }}</span></td>
+                <td><span class="count-badge">{{ count }}</span></td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
