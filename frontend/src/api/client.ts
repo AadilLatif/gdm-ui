@@ -127,6 +127,8 @@ export const scenariosApi = {
     api.post('/api/scenarios/save-as-project', null, {
       params: { filename, scenario_name: scenarioName, ...(timestamp ? { timestamp } : {}) },
     }),
+  create: (data: { scenario_name: string; ops: unknown[] }) =>
+    api.post('/api/scenarios/create', data),
 }
 
 export interface ScenarioFile {

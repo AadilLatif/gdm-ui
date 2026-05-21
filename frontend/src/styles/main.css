@@ -892,6 +892,54 @@ body {
 .palette-item i { color: #7c8aff; font-size: 1rem; width: 20px; text-align: center; }
 .palette-item .pi { font-size: 1.15rem; }
 
+/* ===== Scenario Mode ===== */
+.scenario-toggle-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 12px; border-bottom: 1px solid #2a2d3a;
+}
+.toggle-label {
+  display: flex; align-items: center; gap: 8px; cursor: pointer;
+  font-size: 0.82rem; color: #c5c9dd;
+}
+.toggle-label input { display: none; }
+.toggle-switch {
+  width: 36px; height: 20px; background: #2a2d3a; border-radius: 10px;
+  position: relative; transition: background 0.2s; flex-shrink: 0;
+}
+.toggle-switch::after {
+  content: ''; position: absolute; top: 2px; left: 2px;
+  width: 16px; height: 16px; background: #6b7084; border-radius: 50%;
+  transition: all 0.2s;
+}
+.toggle-label input:checked + .toggle-switch { background: #5b67f5; }
+.toggle-label input:checked + .toggle-switch::after { left: 18px; background: #fff; }
+.scenario-badge {
+  background: #5b67f5; color: #fff; font-size: 0.7rem; font-weight: 700;
+  padding: 2px 7px; border-radius: 10px; min-width: 20px; text-align: center;
+}
+.scenario-controls { padding: 10px 12px; border-bottom: 1px solid #2a2d3a; }
+.scenario-changes-list {
+  max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px;
+  margin-bottom: 8px;
+}
+.scenario-change-item {
+  display: flex; align-items: center; gap: 6px; padding: 5px 8px;
+  border-radius: 6px; font-size: 0.78rem; color: #c5c9dd; background: #1e2130;
+}
+.scenario-change-item.addition { border-left: 3px solid #6fcf6f; }
+.scenario-change-item.edit { border-left: 3px solid #7c8aff; }
+.scenario-change-item.deletion { border-left: 3px solid #e54d4d; }
+.scenario-change-item i { font-size: 0.9rem; }
+.scenario-change-item.addition i { color: #6fcf6f; }
+.scenario-change-item.edit i { color: #7c8aff; }
+.scenario-change-item.deletion i { color: #e54d4d; }
+.change-detail { flex: 1; }
+.change-type { color: #6b7084; }
+.scenario-empty { color: #4a4e65; font-size: 0.8rem; text-align: center; padding: 8px 0; margin: 0; }
+.scenario-actions { display: flex; gap: 8px; justify-content: flex-end; }
+.btn-sm { padding: 5px 12px; font-size: 0.78rem; }
+.btn-xs { padding: 2px; font-size: 0.75rem; }
+
 /* Bus markers */
 .bus-marker {
   background: #5b67f5;

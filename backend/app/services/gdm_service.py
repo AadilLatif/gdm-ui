@@ -306,6 +306,61 @@ class GDMService:
         catalogs = self._scenario_catalogs.get(project_id, {})
         catalogs.pop(filename, None)
 
+    def create_scenario_from_ops(
+        self,
+        project_id: str,
+        scenario_name: str,
+        ops: list[dict[str, Any]],
+    ) -> dict[str, Any]:
+        """Create a scenario catalog from tracked operations recorded in the Network UI."""
+        from gdm.tracked_changes import TrackedChange, PropertyEdit
+        from datetime import datetime as dt
+
+        system = self.get_system(project_id)
+        catalog = system.deepcopy()
+
+        # Group ops by timestamp into TrackedChange steps
+        steps: dict[str, dict[str, list]] = {}
+        for op in ops:
+            ts = op.get("timestamp", dt.now().isoformat())
+            if ts not in steps:
+                steps[ts] = {"additions": [], "deletions": [], "edits": []}
+            if op["action"] == "addition":
+                steps[ts]["additions"].append(UUID(op["uuid"]))
+            elif op["action"] == "deletion":
+                steps[ts]["deletions"].append(UUID(op["uuid"]))
+            elif op["action"] == "edit":
+                for field_name, value in (op.get("editedFields") or {}).items():
+                    pe = PropertyEdit(
+                        name=field_name,
+                        value=value,
+                        component_uuid=UUID(op["uuid"]),
+                    )
+                    catalog.add_component(pe)
+                    steps[ts]["edits"].append(pe)
+
+        for i, (ts, step_data) in enumerate(sorted(steps.items())):
+            tc = TrackedChange(
+                name=f"{scenario_name}_step_{i}",
+                scenario_name=scenario_name,
+                timestamp=dt.fromisoformat(ts),
+                additions=step_data["additions"],
+                deletions=step_data["deletions"],
+                edits=step_data["edits"],
+            )
+            catalog.add_component(tc)
+
+        filename = f"{scenario_name.replace(' ', '_')}.json"
+        if project_id not in self._scenario_catalogs:
+            self._scenario_catalogs[project_id] = {}
+        self._scenario_catalogs[project_id][filename] = catalog
+
+        return {
+            "filename": filename,
+            "scenario_names": [scenario_name],
+            "total_changes": len(steps),
+        }
+
     def apply_scenario(
         self, project_id: str, filename: str, scenario_name: str, timestamp: str | None = None
     ) -> DistributionSystem:

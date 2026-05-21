@@ -103,6 +103,28 @@ async def upload_scenario(
     return result
 
 
+from pydantic import BaseModel
+
+
+class CreateScenarioRequest(BaseModel):
+    scenario_name: str
+    ops: list[dict]
+
+
+@router.post("/create")
+async def create_scenario(
+    body: CreateScenarioRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, Any]:
+    """Create a scenario from tracked operations on the network page."""
+    pid = await _get_active_project_id(user, db)
+    try:
+        return gdm_service.create_scenario_from_ops(pid, body.scenario_name, body.ops)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
 @router.get("/timeline")
 async def get_timeline(
     filename: str,

@@ -44,6 +44,35 @@
             <h3>Components</h3>
             <span class="panel-hint">Drag onto map bus</span>
           </div>
+          <!-- Scenario mode toggle -->
+          <div class="scenario-toggle-bar">
+            <label class="toggle-label">
+              <input type="checkbox" v-model="scenarioMode" @change="onScenarioModeToggle" />
+              <span class="toggle-switch"></span>
+              <span class="toggle-text">{{ scenarioMode ? 'Scenario Mode' : 'Direct Edit' }}</span>
+            </label>
+            <span v-if="scenarioMode && trackedOps.length" class="scenario-badge">{{ trackedOps.length }}</span>
+          </div>
+          <!-- Scenario tracked changes -->
+          <div v-if="scenarioMode" class="scenario-controls">
+            <div v-if="trackedOps.length" class="scenario-changes-list">
+              <div v-for="(op, i) in trackedOps" :key="i" class="scenario-change-item" :class="op.action">
+                <i :class="op.action === 'addition' ? 'ri-add-circle-line' : op.action === 'deletion' ? 'ri-delete-bin-line' : 'ri-edit-line'"></i>
+                <span class="change-detail">
+                  <strong>{{ op.action }}</strong> {{ op.name }}
+                  <span class="change-type">({{ COMP_LABELS[op.type] || op.type }})</span>
+                </span>
+                <button class="btn-icon btn-xs" title="Undo" @click="undoTrackedOp(i)"><i class="ri-close-line"></i></button>
+              </div>
+            </div>
+            <p v-else class="scenario-empty">No changes tracked yet. Add, edit, or delete components.</p>
+            <div class="scenario-actions">
+              <button class="btn btn-ghost btn-sm" :disabled="!trackedOps.length" @click="clearTrackedOps">Clear All</button>
+              <button class="btn btn-primary btn-sm" :disabled="!trackedOps.length" @click="scenarioModal.show = true">
+                <i class="ri-save-line"></i> Save Scenario
+              </button>
+            </div>
+          </div>
           <div class="component-palette">
             <div v-for="(items, cat) in palette" :key="cat" class="palette-category">
               <div class="palette-category-title">{{ cat }}</div>
@@ -170,6 +199,33 @@
       </div>
     </div>
 
+    <!-- Save scenario modal -->
+    <div v-if="scenarioModal.show" class="modal-overlay" @click.self="scenarioModal.show = false">
+      <div class="modal-card" style="max-width:440px">
+        <div class="modal-header">
+          <h3>Save as Scenario</h3>
+          <button class="btn-icon" @click="scenarioModal.show = false"><i class="ri-close-line"></i></button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Scenario Name <span class="required">*</span></label>
+            <input class="form-input" v-model="scenarioModal.name" placeholder="e.g. PV_Expansion_2025" />
+          </div>
+          <div style="margin-top:12px">
+            <p style="color:#c5c9dd;font-size:0.85rem">
+              <strong>{{ trackedOps.filter(o => o.action === 'addition').length }}</strong> additions,
+              <strong>{{ trackedOps.filter(o => o.action === 'edit').length }}</strong> edits,
+              <strong>{{ trackedOps.filter(o => o.action === 'deletion').length }}</strong> deletions
+            </p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" @click="scenarioModal.show = false">Cancel</button>
+          <button class="btn btn-primary" @click="saveScenario" :disabled="!scenarioModal.name.trim()">Save Scenario</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Delete confirm modal -->
     <div v-if="deleteModal.show" class="modal-overlay" @click.self="deleteModal.show = false">
       <div class="modal-card" style="max-width:400px">
@@ -194,7 +250,7 @@
 import { ref, reactive, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import { networkApi, systemApi, equipmentApi } from '../api/client'
+import { networkApi, systemApi, equipmentApi, scenariosApi } from '../api/client'
 import type { Topology, GDMComponent } from '../types/api'
 import { COMPONENT_ICONS, COMPONENT_SCHEMAS, ENUMS } from '../types/schemas'
 import { useToast } from '../composables/useToast'
@@ -205,7 +261,35 @@ const showLabels = ref(false)
 const showIcons = ref(true)
 const hasData = ref(false)
 
+// ===== Scenario Mode =====
+const scenarioMode = ref(false)
+
+interface TrackedOp {
+  action: 'addition' | 'edit' | 'deletion'
+  uuid: string
+  type: string
+  name: string
+  data?: Record<string, unknown>
+  editedFields?: Record<string, unknown>
+  timestamp: string
+}
+const trackedOps = ref<TrackedOp[]>([])
+const scenarioModal = reactive({ show: false, name: 'Scenario_1' })
+
+function clearTrackedOps() { trackedOps.value = [] }
+function undoTrackedOp(index: number) { trackedOps.value.splice(index, 1) }
+function onScenarioModeToggle() {
+  if (!scenarioMode.value && trackedOps.value.length) {
+    if (!confirm('Switching to Direct Edit will discard tracked changes. Continue?')) {
+      scenarioMode.value = true
+      return
+    }
+    clearTrackedOps()
+  }
+}
+
 let map: L.Map | null = null
+let initialLoad = true
 const layers: L.Layer[] = []
 const labelLayers: L.Layer[] = []
 const iconLayers: L.Layer[] = []
@@ -545,11 +629,40 @@ async function saveEdit() {
       if (editModal.compType === 'DistributionBus' && editData._lat) {
         data.coordinate = { x: parseFloat(String(editData._lng)), y: parseFloat(String(editData._lat)) }
       }
-      await equipmentApi.add(editModal.compType, data)
-      toast(`${COMP_LABELS[editModal.compType] || editModal.compType} added`, 'success')
+      const { data: created } = await equipmentApi.add(editModal.compType, data)
+      if (scenarioMode.value) {
+        trackedOps.value.push({
+          action: 'addition',
+          uuid: created.uuid,
+          type: editModal.compType,
+          name: String(data.name || editModal.compType),
+          data,
+          timestamp: new Date().toISOString(),
+        })
+        toast(`${COMP_LABELS[editModal.compType] || editModal.compType} tracked as addition`, 'info')
+      } else {
+        toast(`${COMP_LABELS[editModal.compType] || editModal.compType} added`, 'success')
+      }
     } else {
-      await equipmentApi.update(editModal.uuid, data)
-      toast(`${COMP_LABELS[editModal.compType] || editModal.compType} updated`, 'success')
+      if (scenarioMode.value) {
+        const editedFields: Record<string, unknown> = {}
+        for (const [key, val] of Object.entries(data)) {
+          if (key === '_type' || key === 'uuid') continue
+          editedFields[key] = val
+        }
+        trackedOps.value.push({
+          action: 'edit',
+          uuid: editModal.uuid,
+          type: editModal.compType,
+          name: String(data.name || editModal.compType),
+          editedFields,
+          timestamp: new Date().toISOString(),
+        })
+        toast(`${COMP_LABELS[editModal.compType] || editModal.compType} tracked as edit`, 'info')
+      } else {
+        await equipmentApi.update(editModal.uuid, data)
+        toast(`${COMP_LABELS[editModal.compType] || editModal.compType} updated`, 'success')
+      }
     }
     editModal.show = false
     await loadTopology()
@@ -561,12 +674,38 @@ async function saveEdit() {
 // ===== Delete =====
 async function confirmDelete() {
   try {
-    await equipmentApi.remove(deleteModal.uuid)
-    toast(`${deleteModal.label} deleted`, 'success')
+    if (scenarioMode.value) {
+      trackedOps.value.push({
+        action: 'deletion',
+        uuid: deleteModal.uuid,
+        type: deleteModal.label,
+        name: deleteModal.name,
+        timestamp: new Date().toISOString(),
+      })
+      toast(`${deleteModal.name} tracked as deletion`, 'info')
+    } else {
+      await equipmentApi.remove(deleteModal.uuid)
+      toast(`${deleteModal.label} deleted`, 'success')
+      await loadTopology()
+    }
     deleteModal.show = false
-    await loadTopology()
   } catch (e: any) {
     toast(e.response?.data?.detail || 'Delete failed', 'error')
+  }
+}
+
+// ===== Save Scenario =====
+async function saveScenario() {
+  try {
+    await scenariosApi.create({
+      scenario_name: scenarioModal.name.trim(),
+      ops: trackedOps.value,
+    })
+    toast(`Scenario "${scenarioModal.name}" saved — view it on the Scenarios page`, 'success')
+    scenarioModal.show = false
+    clearTrackedOps()
+  } catch (e: any) {
+    toast(e.response?.data?.detail || 'Failed to save scenario', 'error')
   }
 }
 
@@ -796,9 +935,10 @@ function renderTopology(topology: Topology, buses: GDMComponent[]) {
     layers.push(line)
   }
 
-  if (boundsArr.length > 0) {
+  if (boundsArr.length > 0 && initialLoad) {
     map.invalidateSize()
     map.fitBounds(L.latLngBounds(boundsArr), { padding: [40, 40] })
+    initialLoad = false
   }
 }
 
