@@ -5,6 +5,7 @@ from typing import Any
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from fastapi.responses import FileResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -127,3 +128,68 @@ async def remove_scenario(
     pid = await _get_active_project_id(user, db)
     gdm_service.remove_scenario_catalog(pid, filename)
     return {"detail": "Scenario removed"}
+
+
+@router.get("/download")
+async def download_scenario_model(
+    filename: str,
+    scenario_name: str,
+    timestamp: str | None = None,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Download the base model with scenario changes applied as a zip file."""
+    pid = await _get_active_project_id(user, db)
+    try:
+        safe_name = scenario_name.replace(" ", "_").replace("/", "_")
+        zip_path = gdm_service.export_scenario_zip(
+            pid, filename, scenario_name, timestamp=timestamp, name=safe_name,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    return FileResponse(
+        zip_path,
+        media_type="application/zip",
+        filename=f"{safe_name}.zip",
+    )
+
+
+@router.post("/save-as-project")
+async def save_scenario_as_project(
+    filename: str,
+    scenario_name: str,
+    timestamp: str | None = None,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Apply scenario to base model and save as a new project."""
+    pid = await _get_active_project_id(user, db)
+
+    # Get the active project for naming
+    result = await db.execute(
+        select(Project).where(Project.id == pid)
+    )
+    source = result.scalar_one()
+
+    dest_dir = settings.upload_dir / user.id / str(uuid4())
+    try:
+        json_path = gdm_service.save_scenario_as_project(
+            pid, filename, scenario_name, timestamp=timestamp, dest_dir=str(dest_dir),
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+    new_project = Project(
+        name=f"{source.name} + {scenario_name}",
+        description=f"Scenario '{scenario_name}' applied to {source.name}",
+        file_path=json_path,
+        owner_id=user.id,
+    )
+    db.add(new_project)
+    await db.commit()
+    await db.refresh(new_project)
+    return {
+        "id": new_project.id,
+        "name": new_project.name,
+        "detail": "Scenario model saved as new project",
+    }

@@ -306,6 +306,65 @@ class GDMService:
         catalogs = self._scenario_catalogs.get(project_id, {})
         catalogs.pop(filename, None)
 
+    def apply_scenario(
+        self, project_id: str, filename: str, scenario_name: str, timestamp: str | None = None
+    ) -> DistributionSystem:
+        """Apply tracked changes from a scenario to the base system and return the updated copy."""
+        from gdm.tracked_changes import TrackedChange, apply_updates_to_system
+        from datetime import datetime as dt
+
+        system = self.get_system(project_id)
+        catalogs = self._scenario_catalogs.get(project_id, {})
+        catalog = catalogs.get(filename)
+        if catalog is None:
+            raise ValueError(f"Scenario file not loaded: {filename}")
+
+        tcs = [
+            tc for tc in catalog.get_components(TrackedChange)
+            if tc.scenario_name == scenario_name
+        ]
+        if not tcs:
+            raise ValueError(f"No tracked changes for scenario: {scenario_name}")
+
+        system_date = dt.fromisoformat(timestamp) if timestamp else None
+        updated = apply_updates_to_system(tcs, system, catalog, system_date=system_date)
+        return updated
+
+    def export_scenario_zip(
+        self, project_id: str, filename: str, scenario_name: str,
+        timestamp: str | None = None, name: str = "scenario_model",
+    ) -> str:
+        """Apply scenario then export as zip. Returns zip path."""
+        import shutil
+        import zipfile
+
+        updated = self.apply_scenario(project_id, filename, scenario_name, timestamp)
+        tmpdir = tempfile.mkdtemp()
+        export_dir = Path(tmpdir) / name
+        export_dir.mkdir()
+
+        json_path = export_dir / f"{name}.json"
+        updated.to_json(json_path)
+
+        zip_path = Path(tmpdir) / f"{name}.zip"
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
+            for file in export_dir.rglob("*"):
+                if file.is_file():
+                    zf.write(file, file.relative_to(export_dir))
+        return str(zip_path)
+
+    def save_scenario_as_project(
+        self, project_id: str, filename: str, scenario_name: str,
+        timestamp: str | None = None, dest_dir: str = "",
+    ) -> str:
+        """Apply scenario and save the resulting system to dest_dir. Returns json path."""
+        updated = self.apply_scenario(project_id, filename, scenario_name, timestamp)
+        dest = Path(dest_dir)
+        dest.mkdir(parents=True, exist_ok=True)
+        json_path = dest / "system.json"
+        updated.to_json(json_path)
+        return str(json_path)
+
     def export_system_json(self, project_id: str) -> dict[str, Any]:
         system = self.get_system(project_id)
         with tempfile.TemporaryDirectory() as tmpdir:

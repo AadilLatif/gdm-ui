@@ -118,6 +118,15 @@ export const scenariosApi = {
   timeline: (filename: string, scenarioName: string) =>
     api.get<ScenarioTimeline>('/api/scenarios/timeline', { params: { filename, scenario_name: scenarioName } }),
   remove: (filename: string) => api.delete(`/api/scenarios/${encodeURIComponent(filename)}`),
+  download: (filename: string, scenarioName: string, timestamp?: string | null) =>
+    api.get('/api/scenarios/download', {
+      params: { filename, scenario_name: scenarioName, ...(timestamp ? { timestamp } : {}) },
+      responseType: 'blob',
+    }),
+  saveAsProject: (filename: string, scenarioName: string, timestamp?: string | null) =>
+    api.post('/api/scenarios/save-as-project', null, {
+      params: { filename, scenario_name: scenarioName, ...(timestamp ? { timestamp } : {}) },
+    }),
 }
 
 export interface ScenarioFile {

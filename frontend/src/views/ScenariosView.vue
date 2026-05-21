@@ -87,6 +87,14 @@
           <span class="stat-badge stat-add"><i class="ri-add-line"></i> {{ cumulativeAdded }}</span>
           <span class="stat-badge stat-del"><i class="ri-subtract-line"></i> {{ cumulativeDeleted }}</span>
           <span class="stat-badge stat-edit"><i class="ri-edit-line"></i> {{ cumulativeEdited }}</span>
+          <span class="timeline-actions">
+            <button class="btn btn-sm btn-outline" title="Download updated model as .zip" @click="downloadScenarioModel">
+              <i class="ri-download-2-line"></i> Download
+            </button>
+            <button class="btn btn-sm btn-primary" title="Save updated model to My Models" @click="saveScenarioAsProject">
+              <i class="ri-save-3-line"></i> Save as Model
+            </button>
+          </span>
         </div>
       </div>
 
@@ -258,6 +266,37 @@ async function handleUpload(e: Event) {
     toast(err.response?.data?.detail || 'Upload failed', 'error')
   }
   input.value = ''
+}
+
+function currentTimestamp(): string | null {
+  if (currentStep.value === 0 || !steps.value.length) return null
+  return steps.value[currentStep.value - 1]?.timestamp ?? null
+}
+
+async function downloadScenarioModel() {
+  if (!selectedFile.value || !selectedScenario.value) return
+  try {
+    const { data } = await scenariosApi.download(selectedFile.value, selectedScenario.value, currentTimestamp())
+    const blob = new Blob([data], { type: 'application/zip' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${selectedScenario.value.replace(/\s+/g, '_')}.zip`
+    a.click()
+    URL.revokeObjectURL(url)
+  } catch (err: any) {
+    toast(err.response?.data?.detail || 'Download failed', 'error')
+  }
+}
+
+async function saveScenarioAsProject() {
+  if (!selectedFile.value || !selectedScenario.value) return
+  try {
+    const { data } = await scenariosApi.saveAsProject(selectedFile.value, selectedScenario.value, currentTimestamp())
+    toast(`Saved as "${data.name}" in My Models`, 'success')
+  } catch (err: any) {
+    toast(err.response?.data?.detail || 'Save failed', 'error')
+  }
 }
 
 async function refreshFiles() {
@@ -750,6 +789,12 @@ onUnmounted(() => {
 .timeline-stats {
   display: flex;
   gap: 8px;
+  align-items: center;
+}
+.timeline-actions {
+  display: flex;
+  gap: 6px;
+  margin-left: 8px;
 }
 .stat-badge {
   display: flex;
