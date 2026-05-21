@@ -2,3 +2,18 @@
 .venv/
 __pycache__/
 node_modules/
+*.pyc
+*.bak
+
+# Environment
+.env
+
+# Backend runtime
+backend/uploads/
+backend/*.db
+
+# Data
+data/
+
+# Frontend build
+frontend/dist/
