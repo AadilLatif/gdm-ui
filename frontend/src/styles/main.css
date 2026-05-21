@@ -844,53 +844,68 @@ body {
 
 /* Right panel */
 .network-panel {
-  width: 300px;
-  background: #161922;
-  border-left: 1px solid #2a2d3a;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  bottom: 12px;
+  width: 280px;
+  z-index: 700;
+  background: rgba(26, 28, 38, 0.95);
+  border-radius: 10px;
+  border: 1px solid #2a2d3a;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
-  flex-shrink: 0;
+  overflow: hidden;
 }
-.panel-section { padding: 16px; }
+.panel-section {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
 .panel-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
-.panel-header h3 { font-size: 0.95rem; color: #f0f2f7; font-weight: 600; }
-.panel-hint { font-size: 0.7rem; color: #4a4e65; font-style: italic; }
+.panel-header h3 { font-size: 0.85rem; color: #e0e2ed; font-weight: 600; margin: 0; }
+.panel-hint { font-size: 0.72rem; color: #6b6f82; font-style: italic; }
 
 /* Component palette */
-.component-palette { display: flex; flex-direction: column; gap: 12px; }
+.component-palette {
+  display: flex; flex-direction: column; gap: 10px;
+  overflow-y: auto; flex: 1; min-height: 0;
+  padding-right: 4px;
+}
 .palette-category-title {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 600;
-  color: #6b7084;
+  color: #6b6f82;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
-.palette-category { display: flex; flex-direction: column; gap: 4px; }
+.palette-category { display: flex; flex-direction: column; gap: 3px; }
 .palette-item {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 12px;
-  background: #1e2130;
-  border: 1px solid #2a2d3a;
-  border-radius: 8px;
+  padding: 7px 10px;
+  background: #1c1f2e;
+  border: 1px solid transparent;
+  border-radius: 6px;
   color: #c5c9dd;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 500;
   cursor: grab;
   transition: all 0.15s ease;
   user-select: none;
 }
 .palette-item:hover { border-color: #5b67f5; background: #252940; }
-.palette-item i { color: #7c8aff; font-size: 1rem; width: 20px; text-align: center; }
-.palette-item .pi { font-size: 1.15rem; }
+.palette-item i { color: #7c8aff; font-size: 0.95rem; width: 20px; text-align: center; }
+.palette-item .pi { font-size: 1.1rem; }
 
 /* ===== Scenario Mode ===== */
 .scenario-toggle-bar {
@@ -899,7 +914,7 @@ body {
 }
 .toggle-label {
   display: flex; align-items: center; gap: 8px; cursor: pointer;
-  font-size: 0.82rem; color: #c5c9dd;
+  font-size: 0.78rem; color: #c5c9dd;
 }
 .toggle-label input { display: none; }
 .toggle-switch {
@@ -923,22 +938,25 @@ body {
   margin-bottom: 8px;
 }
 .scenario-change-item {
-  display: flex; align-items: center; gap: 6px; padding: 5px 8px;
-  border-radius: 6px; font-size: 0.78rem; color: #c5c9dd; background: #1e2130;
+  display: flex; align-items: center; gap: 8px; padding: 6px 8px;
+  border-radius: 6px; font-size: 0.78rem; color: #c5c9dd; background: #1c1f2e;
+  border: 1px solid transparent; transition: all 0.15s;
 }
-.scenario-change-item.addition { border-left: 3px solid #6fcf6f; }
-.scenario-change-item.edit { border-left: 3px solid #7c8aff; }
-.scenario-change-item.deletion { border-left: 3px solid #e54d4d; }
-.scenario-change-item i { font-size: 0.9rem; }
-.scenario-change-item.addition i { color: #6fcf6f; }
-.scenario-change-item.edit i { color: #7c8aff; }
-.scenario-change-item.deletion i { color: #e54d4d; }
-.change-detail { flex: 1; }
-.change-type { color: #6b7084; }
-.scenario-empty { color: #4a4e65; font-size: 0.8rem; text-align: center; padding: 8px 0; margin: 0; }
+.scenario-change-item:hover { border-color: #2a2d3a; background: #252940; }
+.scenario-change-item.addition { border-left: 3px solid #4ade80; }
+.scenario-change-item.edit { border-left: 3px solid #fbbf24; }
+.scenario-change-item.deletion { border-left: 3px solid #f87171; }
+.scenario-change-item i { font-size: 0.85rem; }
+.scenario-change-item.addition i { color: #4ade80; }
+.scenario-change-item.edit i { color: #fbbf24; }
+.scenario-change-item.deletion i { color: #f87171; }
+.change-detail { flex: 1; min-width: 0; }
+.change-detail strong { font-weight: 500; }
+.change-type { color: #6b6f82; font-size: 0.7rem; }
+.scenario-empty { color: #6b6f82; font-size: 0.78rem; text-align: center; padding: 8px 0; margin: 0; }
 .scenario-actions { display: flex; gap: 8px; justify-content: flex-end; }
-.btn-sm { padding: 5px 12px; font-size: 0.78rem; }
-.btn-xs { padding: 2px; font-size: 0.75rem; }
+.btn-sm { padding: 5px 12px; font-size: 0.75rem; }
+.btn-xs { padding: 2px; font-size: 0.72rem; }
 
 /* Bus markers */
 .bus-marker {

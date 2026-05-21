@@ -460,6 +460,7 @@ class GDMService:
         """Resolve string references (bus names, equipment names/UUIDs) to actual component objects."""
         import types as _types
         from gdm.distribution.components import DistributionBus
+        from infrasys import Component
 
         resolved = dict(data)
         if not hasattr(cls, "model_fields"):
@@ -488,7 +489,7 @@ class GDMService:
                     actual_type = non_none[0]
 
             # Handle single component ref: str -> lookup by name or UUID
-            if isinstance(actual_type, type) and isinstance(val, str):
+            if isinstance(actual_type, type) and issubclass(actual_type, Component) and isinstance(val, str):
                 if actual_type is DistributionBus:
                     resolved[field_name] = system.get_component(DistributionBus, val)
                 else:
@@ -503,7 +504,7 @@ class GDMService:
             # Handle list of component refs: list[str] -> list[Component]
             elif get_origin(actual_type) is list and isinstance(val, list):
                 inner = get_args(actual_type)
-                if inner and isinstance(inner[0], type):
+                if inner and isinstance(inner[0], type) and issubclass(inner[0], Component):
                     ref_type = inner[0]
                     resolved[field_name] = [
                         (system.get_component(ref_type, v) if isinstance(v, str) else v)

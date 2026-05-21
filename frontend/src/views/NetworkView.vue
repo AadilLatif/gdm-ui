@@ -35,56 +35,56 @@
           <h3>No network loaded</h3>
           <p>Load a GDM system to view the network topology on the map.</p>
         </div>
-      </div>
 
-      <!-- Right panel: component palette -->
-      <div class="network-panel">
-        <div class="panel-section">
-          <div class="panel-header">
-            <h3>Components</h3>
-            <span class="panel-hint">Drag onto map bus</span>
-          </div>
-          <!-- Scenario mode toggle -->
-          <div class="scenario-toggle-bar">
-            <label class="toggle-label">
-              <input type="checkbox" v-model="scenarioMode" @change="onScenarioModeToggle" />
-              <span class="toggle-switch"></span>
-              <span class="toggle-text">{{ scenarioMode ? 'Scenario Mode' : 'Direct Edit' }}</span>
-            </label>
-            <span v-if="scenarioMode && trackedOps.length" class="scenario-badge">{{ trackedOps.length }}</span>
-          </div>
-          <!-- Scenario tracked changes -->
-          <div v-if="scenarioMode" class="scenario-controls">
-            <div v-if="trackedOps.length" class="scenario-changes-list">
-              <div v-for="(op, i) in trackedOps" :key="i" class="scenario-change-item" :class="op.action">
-                <i :class="op.action === 'addition' ? 'ri-add-circle-line' : op.action === 'deletion' ? 'ri-delete-bin-line' : 'ri-edit-line'"></i>
-                <span class="change-detail">
-                  <strong>{{ op.action }}</strong> {{ op.name }}
-                  <span class="change-type">({{ COMP_LABELS[op.type] || op.type }})</span>
-                </span>
-                <button class="btn-icon btn-xs" title="Undo" @click="undoTrackedOp(i)"><i class="ri-close-line"></i></button>
+        <!-- Right panel: component palette -->
+        <div class="network-panel">
+          <div class="panel-section">
+            <div class="panel-header">
+              <h3>Components</h3>
+              <span class="panel-hint">Drag onto map bus</span>
+            </div>
+            <!-- Scenario mode toggle -->
+            <div class="scenario-toggle-bar">
+              <label class="toggle-label">
+                <input type="checkbox" v-model="scenarioMode" @change="onScenarioModeToggle" />
+                <span class="toggle-switch"></span>
+                <span class="toggle-text">{{ scenarioMode ? 'Scenario Mode' : 'Direct Edit' }}</span>
+              </label>
+              <span v-if="scenarioMode && trackedOps.length" class="scenario-badge">{{ trackedOps.length }}</span>
+            </div>
+            <!-- Scenario tracked changes -->
+            <div v-if="scenarioMode" class="scenario-controls">
+              <div v-if="trackedOps.length" class="scenario-changes-list">
+                <div v-for="(op, i) in trackedOps" :key="i" class="scenario-change-item" :class="op.action">
+                  <i :class="op.action === 'addition' ? 'ri-add-circle-line' : op.action === 'deletion' ? 'ri-delete-bin-line' : 'ri-edit-line'"></i>
+                  <span class="change-detail">
+                    <strong>{{ op.action }}</strong> {{ op.name }}
+                    <span class="change-type">({{ COMP_LABELS[op.type] || op.type }})</span>
+                  </span>
+                  <button class="btn-icon btn-xs" title="Undo" @click="undoTrackedOp(i)"><i class="ri-close-line"></i></button>
+                </div>
+              </div>
+              <p v-else class="scenario-empty">No changes tracked yet. Add, edit, or delete components.</p>
+              <div class="scenario-actions">
+                <button class="btn btn-ghost btn-sm" :disabled="!trackedOps.length" @click="clearTrackedOps">Clear All</button>
+                <button class="btn btn-primary btn-sm" :disabled="!trackedOps.length" @click="scenarioModal.show = true">
+                  <i class="ri-save-line"></i> Save Scenario
+                </button>
               </div>
             </div>
-            <p v-else class="scenario-empty">No changes tracked yet. Add, edit, or delete components.</p>
-            <div class="scenario-actions">
-              <button class="btn btn-ghost btn-sm" :disabled="!trackedOps.length" @click="clearTrackedOps">Clear All</button>
-              <button class="btn btn-primary btn-sm" :disabled="!trackedOps.length" @click="scenarioModal.show = true">
-                <i class="ri-save-line"></i> Save Scenario
-              </button>
-            </div>
-          </div>
-          <div class="component-palette">
-            <div v-for="(items, cat) in palette" :key="cat" class="palette-category">
-              <div class="palette-category-title">{{ cat }}</div>
-              <div
-                v-for="item in items"
-                :key="item.type"
-                class="palette-item"
-                draggable="true"
-                @dragstart="onDragStart($event, item.type)"
-              >
-                <i :class="item.icon"></i>
-                <span>{{ item.label }}</span>
+            <div class="component-palette">
+              <div v-for="(items, cat) in palette" :key="cat" class="palette-category">
+                <div class="palette-category-title">{{ cat }}</div>
+                <div
+                  v-for="item in items"
+                  :key="item.type"
+                  class="palette-item"
+                  draggable="true"
+                  @dragstart="onDragStart($event, item.type)"
+                >
+                  <i :class="item.icon"></i>
+                  <span>{{ item.label }}</span>
+                </div>
               </div>
             </div>
           </div>
