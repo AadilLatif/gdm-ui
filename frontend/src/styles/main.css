@@ -877,6 +877,7 @@ body {
 }
 .palette-item:hover { border-color: #5b67f5; background: #252940; }
 .palette-item i { color: #7c8aff; font-size: 1rem; width: 20px; text-align: center; }
+.palette-item .pi { font-size: 1.15rem; }
 
 /* Bus markers */
 .bus-marker {

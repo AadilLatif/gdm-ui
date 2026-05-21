@@ -1,0 +1,102 @@
+/* Power System Icon Font — custom classes using inline SVG backgrounds */
+/* Usage: <i class="pi pi-bus"></i> */
+
+.pi {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  vertical-align: -0.125em;
+  /* Inherit font-size for scaling */
+}
+
+/* Inside Leaflet markers, force a visible size */
+.leaflet-marker-icon .pi {
+  width: 16px;
+  height: 16px;
+}
+
+/* ===== Buses & Nodes ===== */
+.pi-bus {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Crect x='3' y='10' width='18' height='4' rx='1' stroke='%2394a3b8'/%3E%3Cline x1='7' y1='10' x2='7' y2='6' stroke='%2394a3b8'/%3E%3Cline x1='12' y1='10' x2='12' y2='6' stroke='%2394a3b8'/%3E%3Cline x1='17' y1='10' x2='17' y2='6' stroke='%2394a3b8'/%3E%3Cline x1='7' y1='14' x2='7' y2='18' stroke='%2394a3b8'/%3E%3Cline x1='12' y1='14' x2='12' y2='18' stroke='%2394a3b8'/%3E%3Cline x1='17' y1='14' x2='17' y2='18' stroke='%2394a3b8'/%3E%3C/svg%3E");
+}
+
+/* ===== Lines & Conductors ===== */
+.pi-conductor {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cline x1='2' y1='12' x2='22' y2='12'/%3E%3Ccircle cx='6' cy='12' r='1.5' fill='%2394a3b8'/%3E%3Ccircle cx='18' cy='12' r='1.5' fill='%2394a3b8'/%3E%3Cline x1='6' y1='8' x2='6' y2='10' stroke-width='1.5'/%3E%3Cline x1='18' y1='8' x2='18' y2='10' stroke-width='1.5'/%3E%3C/svg%3E");
+}
+
+.pi-cable {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Ccircle cx='12' cy='12' r='8' stroke-width='1.5'/%3E%3Ccircle cx='12' cy='12' r='4' stroke-width='1.5'/%3E%3Ccircle cx='12' cy='12' r='1' fill='%2394a3b8'/%3E%3Cline x1='4' y1='12' x2='2' y2='12'/%3E%3Cline x1='22' y1='12' x2='20' y2='12'/%3E%3C/svg%3E");
+}
+
+/* ===== Transformer ===== */
+.pi-transformer {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Ccircle cx='9' cy='12' r='5'/%3E%3Ccircle cx='15' cy='12' r='5'/%3E%3Cline x1='2' y1='12' x2='4' y2='12'/%3E%3Cline x1='20' y1='12' x2='22' y2='12'/%3E%3C/svg%3E");
+}
+
+.pi-winding {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='M4 12 C4 8, 8 8, 8 12 S12 16, 12 12 S16 8, 16 12 S20 16, 20 12'/%3E%3C/svg%3E");
+}
+
+/* ===== Load ===== */
+.pi-load {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cline x1='12' y1='2' x2='12' y2='8'/%3E%3Cpolygon points='6,8 18,8 12,20' stroke='%2394a3b8' fill='none'/%3E%3C/svg%3E");
+}
+
+/* ===== Capacitor ===== */
+.pi-capacitor {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cline x1='12' y1='2' x2='12' y2='8'/%3E%3Cline x1='6' y1='8' x2='18' y2='8'/%3E%3Cline x1='6' y1='12' x2='18' y2='12'/%3E%3Cline x1='12' y1='12' x2='12' y2='22'/%3E%3C/svg%3E");
+}
+
+/* ===== Solar / PV ===== */
+.pi-solar {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='1.8'%3E%3Crect x='3' y='6' width='18' height='12' rx='1'/%3E%3Cline x1='3' y1='12' x2='21' y2='12'/%3E%3Cline x1='9' y1='6' x2='9' y2='18'/%3E%3Cline x1='15' y1='6' x2='15' y2='18'/%3E%3Cline x1='1' y1='3' x2='4' y2='5' stroke-width='1.5'/%3E%3Cline x1='12' y1='1' x2='12' y2='4' stroke-width='1.5'/%3E%3Cline x1='23' y1='3' x2='20' y2='5' stroke-width='1.5'/%3E%3C/svg%3E");
+}
+
+/* ===== Battery ===== */
+.pi-battery {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Crect x='3' y='7' width='16' height='10' rx='1'/%3E%3Cline x1='19' y1='10' x2='21' y2='10'/%3E%3Cline x1='19' y1='14' x2='21' y2='14'/%3E%3Cline x1='7' y1='10' x2='7' y2='14' stroke-width='1.5'/%3E%3Cline x1='11' y1='10' x2='11' y2='14' stroke-width='1.5'/%3E%3C/svg%3E");
+}
+
+/* ===== Inverter ===== */
+.pi-inverter {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Crect x='4' y='4' width='16' height='16' rx='2'/%3E%3Cpath d='M7 15 Q9 9, 11 15' stroke-width='1.5'/%3E%3Cline x1='14' y1='9' x2='18' y2='9' stroke-width='1.5'/%3E%3Cpath d='M14 15 L16 15 L16 12 L18 12' stroke-width='1.5'/%3E%3C/svg%3E");
+}
+
+/* ===== Voltage Source ===== */
+.pi-vsource {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Ccircle cx='12' cy='12' r='8'/%3E%3Cpath d='M8 12 Q10 7, 12 12 Q14 17, 16 12' stroke-width='1.5'/%3E%3Cline x1='12' y1='2' x2='12' y2='4'/%3E%3Cline x1='12' y1='20' x2='12' y2='22'/%3E%3C/svg%3E");
+}
+
+/* ===== Impedance Branch ===== */
+.pi-impedance {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cline x1='2' y1='12' x2='5' y2='12'/%3E%3Crect x='5' y='8' width='14' height='8' rx='0'/%3E%3Cline x1='19' y1='12' x2='22' y2='12'/%3E%3Cpath d='M7 12 L9 9 L11 15 L13 9 L15 15 L17 12' stroke-width='1.2' fill='none'/%3E%3C/svg%3E");
+}
+
+/* ===== Geometry Branch ===== */
+.pi-geometry {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cline x1='2' y1='12' x2='22' y2='12'/%3E%3Cline x1='12' y1='4' x2='12' y2='20'/%3E%3Ccircle cx='8' cy='8' r='1.5' fill='%2394a3b8'/%3E%3Ccircle cx='16' cy='8' r='1.5' fill='%2394a3b8'/%3E%3Ccircle cx='12' cy='16' r='1.5' fill='%2394a3b8'/%3E%3C/svg%3E");
+}
+
+/* ===== Fuse ===== */
+.pi-fuse {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cline x1='2' y1='12' x2='7' y2='12'/%3E%3Crect x='7' y='9' width='10' height='6' rx='1'/%3E%3Cline x1='9' y1='12' x2='15' y2='12' stroke-width='1'/%3E%3Cline x1='17' y1='12' x2='22' y2='12'/%3E%3C/svg%3E");
+}
+
+/* ===== Recloser ===== */
+.pi-recloser {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cline x1='2' y1='12' x2='8' y2='12'/%3E%3Crect x='8' y='7' width='8' height='10' rx='1'/%3E%3Cpath d='M11 10 L13 10 L11 14 L13 14' stroke-width='1.5'/%3E%3Cline x1='16' y1='12' x2='22' y2='12'/%3E%3C/svg%3E");
+}
+
+/* ===== Switch ===== */
+.pi-switch {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cline x1='2' y1='16' x2='8' y2='16'/%3E%3Ccircle cx='8' cy='16' r='1.5'/%3E%3Cline x1='9' y1='15' x2='17' y2='8'/%3E%3Ccircle cx='18' cy='16' r='1.5'/%3E%3Cline x1='19.5' y1='16' x2='22' y2='16'/%3E%3C/svg%3E");
+}
+
+/* ===== Controller ===== */
+.pi-controller {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='1.8'%3E%3Crect x='4' y='4' width='16' height='16' rx='2'/%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3Cline x1='12' y1='4' x2='12' y2='9'/%3E%3Cline x1='12' y1='15' x2='12' y2='20'/%3E%3Cline x1='4' y1='12' x2='9' y2='12'/%3E%3Cline x1='15' y1='12' x2='20' y2='12'/%3E%3C/svg%3E");
+}

@@ -278,27 +278,27 @@ const deleteModal = reactive({
 
 const palette = {
   'Loads & DER': [
-    { type: 'DistributionLoad', icon: 'ri-flashlight-fill', label: 'Load' },
-    { type: 'DistributionSolar', icon: 'ri-sun-line', label: 'Solar' },
-    { type: 'DistributionBattery', icon: 'ri-battery-2-line', label: 'Battery' },
-    { type: 'DistributionCapacitor', icon: 'ri-battery-charge-line', label: 'Capacitor' },
+    { type: 'DistributionLoad', icon: 'pi pi-load', label: 'Load' },
+    { type: 'DistributionSolar', icon: 'pi pi-solar', label: 'Solar' },
+    { type: 'DistributionBattery', icon: 'pi pi-battery', label: 'Battery' },
+    { type: 'DistributionCapacitor', icon: 'pi pi-capacitor', label: 'Capacitor' },
   ],
   Sources: [
-    { type: 'DistributionVoltageSource', icon: 'ri-plug-2-line', label: 'Voltage Source' },
+    { type: 'DistributionVoltageSource', icon: 'pi pi-vsource', label: 'Voltage Source' },
   ],
   Branches: [
-    { type: 'MatrixImpedanceBranch', icon: 'ri-git-branch-line', label: 'Impedance Branch' },
-    { type: 'SequenceImpedanceBranch', icon: 'ri-git-merge-line', label: 'Seq. Branch' },
-    { type: 'GeometryBranch', icon: 'ri-shape-line', label: 'Geometry Branch' },
+    { type: 'MatrixImpedanceBranch', icon: 'pi pi-impedance', label: 'Impedance Branch' },
+    { type: 'SequenceImpedanceBranch', icon: 'pi pi-impedance', label: 'Seq. Branch' },
+    { type: 'GeometryBranch', icon: 'pi pi-geometry', label: 'Geometry Branch' },
   ],
   Protection: [
-    { type: 'MatrixImpedanceFuse', icon: 'ri-shield-flash-line', label: 'Fuse' },
-    { type: 'MatrixImpedanceRecloser', icon: 'ri-restart-line', label: 'Recloser' },
-    { type: 'MatrixImpedanceSwitch', icon: 'ri-toggle-line', label: 'Switch' },
+    { type: 'MatrixImpedanceFuse', icon: 'pi pi-fuse', label: 'Fuse' },
+    { type: 'MatrixImpedanceRecloser', icon: 'pi pi-recloser', label: 'Recloser' },
+    { type: 'MatrixImpedanceSwitch', icon: 'pi pi-switch', label: 'Switch' },
   ],
   Infrastructure: [
-    { type: 'DistributionTransformer', icon: 'ri-swap-box-line', label: 'Transformer' },
-    { type: 'DistributionBus', icon: 'ri-circle-line', label: 'Bus' },
+    { type: 'DistributionTransformer', icon: 'pi pi-transformer', label: 'Transformer' },
+    { type: 'DistributionBus', icon: 'pi pi-bus', label: 'Bus' },
   ],
 }
 

@@ -5,6 +5,7 @@ import router from './router'
 import { useAuthStore } from './stores/auth'
 import 'remixicon/fonts/remixicon.css'
 import './styles/main.css'
+import './styles/power-icons.css'
 
 const app = createApp(App)
 const pinia = createPinia()
