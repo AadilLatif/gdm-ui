@@ -604,6 +604,19 @@ body {
 }
 .toast.success { background: #1a2e1a; border: 1px solid #2d5a2d; color: #6fcf6f; }
 .toast.error { background: #2e1a1a; border: 1px solid #5a2d2d; color: #e54d4d; }
+.toast-msg { flex: 1; }
+.toast-copy {
+  background: none;
+  border: none;
+  color: inherit;
+  opacity: 0.6;
+  cursor: pointer;
+  padding: 2px 4px;
+  font-size: 0.95rem;
+  line-height: 1;
+  transition: opacity 0.15s;
+}
+.toast-copy:hover { opacity: 1; }
 .toast.info { background: #1a1a2e; border: 1px solid #2d2d5a; color: #7c8aff; }
 @keyframes slideUp {
   from { opacity: 0; transform: translateY(20px); }

@@ -401,6 +401,62 @@ class GDMService:
 
     # ===== CRUD operations =====
 
+    def _resolve_references(self, system: DistributionSystem, cls: type, data: dict[str, Any]) -> dict[str, Any]:
+        """Resolve string references (bus names, equipment names/UUIDs) to actual component objects."""
+        import types as _types
+        from gdm.distribution.components import DistributionBus
+
+        resolved = dict(data)
+        if not hasattr(cls, "model_fields"):
+            return resolved
+
+        for field_name, field_info in cls.model_fields.items():
+            if field_name not in resolved:
+                continue
+            val = resolved[field_name]
+            if val is None or not isinstance(val, (str, list)):
+                continue
+
+            annotation = field_info.annotation
+            if annotation is None:
+                continue
+            actual_type = annotation
+            if get_origin(annotation) is typing.Annotated:
+                actual_type = get_args(annotation)[0]
+
+            # Unwrap Optional / X | None union types to the concrete type
+            origin = get_origin(actual_type)
+            if origin is typing.Union or isinstance(actual_type, _types.UnionType):
+                args = get_args(actual_type)
+                non_none = [a for a in args if a is not type(None)]
+                if len(non_none) == 1:
+                    actual_type = non_none[0]
+
+            # Handle single component ref: str -> lookup by name or UUID
+            if isinstance(actual_type, type) and isinstance(val, str):
+                if actual_type is DistributionBus:
+                    resolved[field_name] = system.get_component(DistributionBus, val)
+                else:
+                    try:
+                        resolved[field_name] = system.get_component_by_uuid(UUID(val))
+                    except Exception:
+                        try:
+                            resolved[field_name] = system.get_component(actual_type, val)
+                        except Exception:
+                            pass  # Leave as-is; model_validate will produce a clear error
+
+            # Handle list of component refs: list[str] -> list[Component]
+            elif get_origin(actual_type) is list and isinstance(val, list):
+                inner = get_args(actual_type)
+                if inner and isinstance(inner[0], type):
+                    ref_type = inner[0]
+                    resolved[field_name] = [
+                        (system.get_component(ref_type, v) if isinstance(v, str) else v)
+                        for v in val
+                    ]
+
+        return resolved
+
     def add_component(self, project_id: str, type_name: str, data: dict[str, Any]) -> dict[str, Any]:
         """Create a new component from type name + field data and add to system."""
         from infrasys.location import Location
@@ -410,7 +466,8 @@ class GDMService:
             raise ValueError(f"Unknown component type: {type_name}")
         system = self.get_system(project_id)
         coerced = _coerce_quantities(cls, data)
-        component = cls.model_validate(coerced)
+        resolved = self._resolve_references(system, cls, coerced)
+        component = cls.model_validate(resolved)
         # Add composed sub-components (e.g. Location) to system first
         if hasattr(component, "coordinate") and component.coordinate is not None:
             system.add_component(component.coordinate)
