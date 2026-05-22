@@ -8,12 +8,19 @@ node_modules/
 # Environment
 .env
 
-# Backend runtime
+# Backend
+*.egg-info/
+uv.lock
+backend/.venv/
 backend/uploads/
 backend/*.db
+backend/packages/fgc_core/*.egg-info/
+backend/packages/fgc_core/uploads/
+backend/packages/fgc_core/*.db
 
 # Data
 data/
 
 # Frontend build
 frontend/dist/
+frontend/node_modules/

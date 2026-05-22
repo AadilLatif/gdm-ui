@@ -1,0 +1,28 @@
+[project]
+name = "fgc-core"
+version = "0.1.0"
+description = "FGC Studio core backend package"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "sqlalchemy>=2.0",
+    "greenlet>=3.0",
+    "aiosqlite>=0.20.0",
+    "python-jose[cryptography]>=3.3.0",
+    "bcrypt>=4.0",
+    "python-multipart>=0.0.12",
+    "pydantic>=2.0",
+    "pydantic-settings>=2.0",
+    "email-validator>=2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.11.0",
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24.0",
+]
+
+[tool.uv]
+package = true

@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# Launch GDM Studio — backend + frontend dev servers
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -20,7 +19,11 @@ lsof -ti:5173 | xargs kill -9 2>/dev/null || true
 # ── Backend ──────────────────────────────────────────────
 echo "Starting backend (FastAPI) on http://localhost:8000 ..."
 cd "$SCRIPT_DIR/backend"
-.venv/bin/python run.py &
+export GDM_UPLOAD_DIR="/home/aadil/Documents/gfc_files/uploads"
+export GDM_DATABASE_URL="sqlite+aiosqlite:///home/aadil/Documents/gfc_files/database/gdm_studio.db"
+mkdir -p "$GDM_UPLOAD_DIR"
+mkdir -p "/home/aadil/Documents/gfc_files/database"
+"$SCRIPT_DIR/.venv/bin/python" -m uvicorn fgc_core.main:app --host 0.0.0.0 --port 8000 --reload &
 BACKEND_PID=$!
 
 # ── Frontend ─────────────────────────────────────────────
