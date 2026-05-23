@@ -5,5 +5,9 @@ from fgc_flow_api.schemas.auth import (
     RegisterRequest,
     TokenResponse,
 )
+from fgc_flow_api.schemas.error import ErrorResponse
 
-__all__ = ["LoginRequest", "RefreshRequest", "RegisterRequest", "TokenResponse"]
+__all__ = [
+    "LoginRequest", "RefreshRequest", "RegisterRequest", "TokenResponse",
+    "ErrorResponse",
+]
