@@ -93,50 +93,50 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01 | TBD | Pending |
-| AUTH-02 | TBD | Pending |
-| AUTH-03 | TBD | Pending |
-| FND-01 | TBD | Pending |
-| FND-02 | TBD | Pending |
-| FND-03 | TBD | Pending |
-| FND-04 | TBD | Pending |
-| FND-05 | TBD | Pending |
-| FND-06 | TBD | Pending |
-| JOB-01 | TBD | Pending |
-| JOB-02 | TBD | Pending |
-| JOB-03 | TBD | Pending |
-| JOB-04 | TBD | Pending |
-| JOB-05 | TBD | Pending |
-| JOB-06 | TBD | Pending |
-| JOB-07 | TBD | Pending |
-| SIM-01 | TBD | Pending |
-| SIM-02 | TBD | Pending |
-| SIM-03 | TBD | Pending |
-| SIM-04 | TBD | Pending |
-| SIM-05 | TBD | Pending |
-| SIM-06 | TBD | Pending |
-| SIM-07 | TBD | Pending |
-| MOD-01 | TBD | Pending |
-| MOD-02 | TBD | Pending |
-| MOD-03 | TBD | Pending |
-| MOD-04 | TBD | Pending |
-| MOD-05 | TBD | Pending |
-| MOD-06 | TBD | Pending |
-| MOD-07 | TBD | Pending |
-| EXP-01 | TBD | Pending |
-| EXP-02 | TBD | Pending |
-| EXP-03 | TBD | Pending |
-| EXP-04 | TBD | Pending |
-| EXP-05 | TBD | Pending |
-| DOC-01 | TBD | Pending |
-| DOC-02 | TBD | Pending |
-| DOC-03 | TBD | Pending |
-| DOC-04 | TBD | Pending |
+| AUTH-01 | Phase 1 | Pending |
+| AUTH-02 | Phase 1 | Pending |
+| AUTH-03 | Phase 1 | Pending |
+| FND-01 | Phase 1 | Pending |
+| FND-02 | Phase 1 | Pending |
+| FND-03 | Phase 1 | Pending |
+| FND-04 | Phase 1 | Pending |
+| FND-05 | Phase 1 | Pending |
+| FND-06 | Phase 1 | Pending |
+| JOB-01 | Phase 2 | Pending |
+| JOB-02 | Phase 2 | Pending |
+| JOB-03 | Phase 2 | Pending |
+| JOB-04 | Phase 2 | Pending |
+| JOB-05 | Phase 2 | Pending |
+| JOB-06 | Phase 2 | Pending |
+| JOB-07 | Phase 2 | Pending |
+| SIM-01 | Phase 3 | Pending |
+| SIM-02 | Phase 3 | Pending |
+| SIM-03 | Phase 3 | Pending |
+| SIM-04 | Phase 3 | Pending |
+| SIM-05 | Phase 3 | Pending |
+| SIM-06 | Phase 3 | Pending |
+| SIM-07 | Phase 3 | Pending |
+| MOD-01 | Phase 3 | Pending |
+| MOD-02 | Phase 3 | Pending |
+| MOD-03 | Phase 4 | Pending |
+| MOD-04 | Phase 4 | Pending |
+| MOD-05 | Phase 4 | Pending |
+| MOD-06 | Phase 4 | Pending |
+| MOD-07 | Phase 4 | Pending |
+| EXP-01 | Phase 4 | Pending |
+| EXP-02 | Phase 4 | Pending |
+| EXP-03 | Phase 4 | Pending |
+| EXP-04 | Phase 4 | Pending |
+| EXP-05 | Phase 4 | Pending |
+| DOC-01 | Phase 1 | Pending |
+| DOC-02 | Phase 2 | Pending |
+| DOC-03 | Phase 1 | Pending |
+| DOC-04 | Phase 4 | Pending |
 
 **Coverage:**
-- v1 requirements: 38 total
-- Mapped to phases: 0
-- Unmapped: 38 ⚠️
+- v1 requirements: 39 total
+- Mapped to phases: 39
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-05-22*
