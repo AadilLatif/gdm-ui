@@ -1,19 +1,17 @@
 """Shared test fixtures for fgc_flow_api."""
-
 import sys
 from pathlib import Path
 
-CORE_PACKAGE_DIR = Path(__file__).resolve().parents[2] / "fgc_core"
-if str(CORE_PACKAGE_DIR) not in sys.path:
-    sys.path.insert(0, str(CORE_PACKAGE_DIR))
+PACKAGES_DIR = Path(__file__).resolve().parents[2]
+for entry in PACKAGES_DIR.iterdir():
+    if entry.is_dir() and (entry / "pyproject.toml").exists():
+        sys.path.insert(0, str(entry))
 
 import pytest
 
 
 @pytest.fixture
 def app(monkeypatch):
-    """Return the FastAPI app with startup DB init disabled for tests."""
-
     async def _noop():
         return None
 

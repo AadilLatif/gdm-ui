@@ -1,33 +1,17 @@
 from pathlib import Path
 
-try:
-    from pydantic_settings import BaseSettings
-except ModuleNotFoundError:  # pragma: no cover - fallback for minimal test envs
-    from pydantic import BaseModel
-
-    class BaseSettings(BaseModel):
-        model_config = {"extra": "ignore"}
+from fgc_core.config import FGCBaseSettings
 
 
-class Settings(BaseSettings):
+class Settings(FGCBaseSettings):
     app_name: str = "FGC Flow API"
-    debug: bool = False
 
-    base_dir: Path = Path(__file__).resolve().parent.parent
-    upload_dir: Path | None = None
-    database_url: str | None = None
     jobs_database_url: str | None = None
 
-    access_token_expire_minutes: int = 60
-    refresh_token_expire_days: int = 7
-
-    cors_origins: list[str] = [
-        "http://localhost:5173",
-        "http://localhost:3000",
-        "http://localhost:8080",
-    ]
-
-    model_config = {"env_prefix": "FGC_FLOW_", "env_file": base_dir / ".env"}
+    model_config = {
+        "env_prefix": "FGC_FLOW_",
+        "env_file": Path(__file__).resolve().parent.parent / ".env",
+    }
 
 
 settings = Settings()

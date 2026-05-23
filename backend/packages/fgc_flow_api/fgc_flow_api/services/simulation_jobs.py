@@ -38,27 +38,10 @@ def _solver_base_seconds(solver: SimulationSolverName) -> float:
     }[solver]
 
 
-def _sweep_cardinality(body: SimulationRequest) -> int:
-    config = body.config.model_dump(mode="json")
-    solver_config = {
-        SimulationSolverName.AC_OPF: config.get("ac", {}),
-        SimulationSolverName.DC_OPF: config.get("dc", {}),
-        SimulationSolverName.LINDISTFLOW: config.get("lindistflow", {}),
-    }[body.solver]
-    if not isinstance(solver_config, dict):
-        return 1
-    cardinalities: list[int] = []
-    for value in solver_config.values():
-        if isinstance(value, (list, tuple)):
-            cardinalities.append(len(value) or 1)
-    return max(cardinalities, default=1)
-
-
 def estimate_runtime_seconds(body: SimulationRequest) -> float:
     solver_factor = _solver_base_seconds(body.solver)
     iteration_factor = body.config.max_iter / 300.0
-    sweep_factor = _sweep_cardinality(body) * 0.75
-    return round(solver_factor + iteration_factor + sweep_factor, 3)
+    return round(solver_factor + iteration_factor, 3)
 
 
 def _result_file_path(job_id: str) -> Path:

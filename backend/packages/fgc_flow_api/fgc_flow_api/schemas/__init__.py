@@ -1,6 +1,6 @@
 """Pydantic request/response schemas for fgc_flow_api."""
 
-from fgc_flow_api.schemas.auth import (
+from fgc_core.schemas.auth import (
     LoginRequest,
     RefreshRequest,
     RegisterRequest,
@@ -36,23 +36,22 @@ from fgc_flow_api.schemas.simulations import (
 )
 
 __all__ = [
-    "LoginRequest",
-    "RefreshRequest",
-    "RegisterRequest",
-    "TokenResponse",
+    "ACSolverConfig",
+    "DCSolverConfig",
+    "ErrorResponse",
     "JobResultResponse",
     "JobStatusResponse",
     "JobSubmissionRequest",
     "JobSubmissionResponse",
+    "LinDistFlowConfig",
+    "LoginRequest",
     "ModelListItem",
     "ModelListResponse",
     "ModelResponse",
     "ModelUploadRequest",
     "ModelUploadResponse",
-    "ErrorResponse",
-    "ACSolverConfig",
-    "DCSolverConfig",
-    "LinDistFlowConfig",
+    "RefreshRequest",
+    "RegisterRequest",
     "SimulationBatchRequest",
     "SimulationBatchResponse",
     "SimulationCompareRequest",
@@ -62,4 +61,5 @@ __all__ = [
     "SimulationResponse",
     "SimulationSolverName",
     "SolverConfig",
+    "TokenResponse",
 ]

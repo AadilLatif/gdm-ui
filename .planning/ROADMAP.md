@@ -44,10 +44,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 02-01: Job model + DB schema — `Job` SQLAlchemy model with all fields, `CachedResult` model, migrations to jobs DB
-- [ ] 02-02: Job submission + status polling + result retrieval endpoints with Pydantic response models
-- [ ] 02-03: Background worker — `run_in_threadpool` loop that dequeues PENDING jobs, calls solver functions, stores results on disk
-- [ ] 02-04: Retry logic (max 3, exponential backoff) + SHA-256 result caching
+- [ ] 02-01: Job persistence contracts — `Job`/`CachedResult` SQLite models with immutable `model_version_id` references and cache-key constraints
+- [ ] 02-02: Queue API surface — typed submit/status/result schemas and `/api/jobs` router endpoints
+- [ ] 02-03: Background worker — `run_in_threadpool` dequeuer that advances jobs through SQLite-backed lifecycle states
+- [ ] 02-04: Retry + cache wiring — fixed 3-attempt backoff, SHA-256 cache reuse, and FastAPI lifespan bootstrap
 
 ### Phase 3: Core Simulation Endpoints
 **Goal**: Users can upload GDM models, run AC OPF/DC OPF/LinDistFlow simulations individually or in compare/batch modes, with sync response for fast runs and job queue for long runs
