@@ -7,15 +7,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from fgc_flow_api.config import settings
-from fgc_flow_api.database import init_jobs_db
+from fgc_flow_api.database import init_flow_db, init_jobs_db
 from fgc_flow_api.exceptions import FGCFlowException
-from fgc_flow_api.routers import auth_router, jobs_router
+from fgc_flow_api.routers import auth_router, jobs_router, models_router, simulations_router
 from fgc_flow_api.schemas.error import ErrorResponse
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan: initialize database connections on startup."""
+    await init_flow_db()
     await init_jobs_db()
     yield
 
@@ -41,6 +42,8 @@ app.add_middleware(
 # ── Routers ───────────────────────────────────────────────────────────
 app.include_router(auth_router)
 app.include_router(jobs_router)
+app.include_router(models_router)
+app.include_router(simulations_router)
 
 # ── Global Exception Handlers ─────────────────────────────────────────
 
