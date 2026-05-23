@@ -14,6 +14,7 @@ from fgc_flow_api.schemas.simulations import (
     SimulationRequest,
     SimulationResponse,
     SimulationSolverName,
+    SolverConfig,
 )
 
 
@@ -119,10 +120,11 @@ def _load_system(model: Model):
     return DistributionSystem.from_json(Path(model.file_path))
 
 
-def _run_ac_opf(model: Model, body: SimulationRequest) -> dict[str, Any]:
+def _run_ac_opf(model: Model, body: SimulationRequest, system: Any | None = None) -> dict[str, Any]:
     from fgc_flow import optimize_ac_power_flow_from_components
 
-    system = _load_system(model)
+    if system is None:
+        system = _load_system(model)
     result = optimize_ac_power_flow_from_components(system, **_ac_kwargs(body.config.ac))
     return {
         "solver": body.solver.value,
@@ -132,10 +134,11 @@ def _run_ac_opf(model: Model, body: SimulationRequest) -> dict[str, Any]:
     }
 
 
-def _run_dc_opf(model: Model, body: SimulationRequest) -> dict[str, Any]:
+def _run_dc_opf(model: Model, body: SimulationRequest, system: Any | None = None) -> dict[str, Any]:
     from fgc_flow import solve_dc_opf_from_components
 
-    system = _load_system(model)
+    if system is None:
+        system = _load_system(model)
     result = solve_dc_opf_from_components(system, **_dc_kwargs(body.config.dc))
     return {
         "solver": body.solver.value,
@@ -145,10 +148,11 @@ def _run_dc_opf(model: Model, body: SimulationRequest) -> dict[str, Any]:
     }
 
 
-def _run_lindistflow(model: Model, body: SimulationRequest) -> dict[str, Any]:
+def _run_lindistflow(model: Model, body: SimulationRequest, system: Any | None = None) -> dict[str, Any]:
     from fgc_flow import build_lindistflow_net_injections_from_components, solve_lindistflow
 
-    system = _load_system(model)
+    if system is None:
+        system = _load_system(model)
     kwargs = _lindistflow_kwargs(body.config.lindistflow)
     p_net, q_net = build_lindistflow_net_injections_from_components(
         system,
@@ -173,4 +177,35 @@ def _run_lindistflow(model: Model, body: SimulationRequest) -> dict[str, Any]:
         "model_id": model.id,
         "config": body.config.model_dump(mode="json"),
         "result": _serialize_solver_result(result),
+    }
+
+
+def _compare_summary(ac: dict[str, Any], dc: dict[str, Any], lindistflow: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "ac_success": ac["success"],
+        "dc_success": dc["success"],
+        "lindistflow_success": lindistflow["success"],
+        "ac_source_p_w": ac["source_injection"]["p_w"],
+        "dc_slack_injection_w": dc["slack_injection_w"],
+        "ldf_source_bus": lindistflow["source_bus"],
+    }
+
+
+async def run_compare(model: Model, config: SolverConfig) -> dict[str, Any]:
+    system = await run_in_threadpool(_load_system, model)
+
+    ac_body = SimulationRequest(model_id=model.id, solver=SimulationSolverName.AC_OPF, config=config)
+    dc_body = SimulationRequest(model_id=model.id, solver=SimulationSolverName.DC_OPF, config=config)
+    ldf_body = SimulationRequest(model_id=model.id, solver=SimulationSolverName.LINDISTFLOW, config=config)
+
+    ac = await run_in_threadpool(_run_ac_opf, model, ac_body, system)
+    dc = await run_in_threadpool(_run_dc_opf, model, dc_body, system)
+    lindistflow = await run_in_threadpool(_run_lindistflow, model, ldf_body, system)
+
+    return {
+        "model_id": model.id,
+        "ac": ac,
+        "dc": dc,
+        "lindistflow": lindistflow,
+        "summary": _compare_summary(ac, dc, lindistflow),
     }

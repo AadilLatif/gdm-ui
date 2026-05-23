@@ -81,11 +81,37 @@ class SimulationRequest(BaseModel):
     config: SolverConfig = Field(default_factory=SolverConfig)
 
 
+class SimulationCompareRequest(BaseModel):
+    model_id: str = Field(..., min_length=1)
+    config: SolverConfig = Field(default_factory=SolverConfig)
+
+
+class SimulationBatchRequest(SimulationRequest):
+    parameter_grid: dict[str, list[Any]] = Field(default_factory=dict)
+
+
 class SimulationResponse(BaseModel):
     model_id: str
     solver: SimulationSolverName
     config: SolverConfig
     result: dict[str, Any]
+
+
+class SimulationCompareResponse(BaseModel):
+    model_id: str
+    ac: dict[str, Any]
+    dc: dict[str, Any]
+    lindistflow: dict[str, Any]
+    summary: dict[str, Any]
+
+
+class SimulationBatchResponse(BaseModel):
+    model_id: str
+    solver: SimulationSolverName
+    queued_jobs: int
+    job_ids: list[str]
+    sweep_points: list[dict[str, Any]]
+    parameter_grid: dict[str, list[Any]]
 
 
 class SimulationDispatchResponse(BaseModel):
