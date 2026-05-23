@@ -172,7 +172,7 @@ export const useSimulationStore = defineStore('simulation', () => {
     healthChecking.value = true
     try {
       const { data } = await healthApi.check()
-      isBackendOnline.value = data.status === 'healthy'
+      isBackendOnline.value = data.status === 'ok'
       isBackendDown.value = !isBackendOnline.value
     } catch {
       isBackendOnline.value = false

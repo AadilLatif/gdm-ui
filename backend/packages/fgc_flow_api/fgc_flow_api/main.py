@@ -124,7 +124,7 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
 # ── Health Check ──────────────────────────────────────────────────────
 
 
-@app.get("/health", tags=["system"])
+@app.get("/api/health", tags=["system"])
 async def health():
     """Health check endpoint — returns status ok if the app is running."""
     return {"status": "ok"}

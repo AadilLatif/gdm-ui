@@ -33,6 +33,7 @@ export interface Project {
   is_active: boolean
   created_at: string
   owner_id: string
+  file_path?: string
 }
 
 // ===== System =====

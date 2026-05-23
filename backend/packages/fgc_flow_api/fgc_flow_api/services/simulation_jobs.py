@@ -38,10 +38,11 @@ def _solver_base_seconds(solver: SimulationSolverName) -> float:
     }[solver]
 
 
-def estimate_runtime_seconds(body: SimulationRequest) -> float:
+def estimate_runtime_seconds(body: SimulationRequest, model_size_bytes: int) -> float:
     solver_factor = _solver_base_seconds(body.solver)
     iteration_factor = body.config.max_iter / 300.0
-    return round(solver_factor + iteration_factor, 3)
+    size_factor = model_size_bytes / (1024.0 * 1024.0 * 2.0)
+    return round(solver_factor + iteration_factor + size_factor, 3)
 
 
 def _result_file_path(job_id: str) -> Path:

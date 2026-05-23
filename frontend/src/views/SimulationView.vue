@@ -4,7 +4,7 @@
       <div class="page-header-row">
         <div>
           <h1>Power Flow Simulations</h1>
-          <p class="subtitle">Run power flow analysis on uploaded distribution system models</p>
+          <p class="subtitle">Run power flow analysis on the loaded distribution system model</p>
         </div>
         <div v-if="simStore.isBackendOnline" style="display:flex;align-items:center;gap:8px">
           <span class="status-indicator online"><i class="ri-checkbox-circle-fill"></i> API Online</span>
@@ -23,7 +23,7 @@
         <i class="ri-plug-line" style="font-size:3rem;color:#e54d4d;margin-bottom:12px"></i>
         <h3>Flow Backend Not Running</h3>
         <p>Start the FGC Flow API server to run simulations.</p>
-        <code class="start-cmd" style="display:inline-block;background:#1e2130;padding:8px 16px;border-radius:6px;font-family:monospace;font-size:.82rem;color:#7c8aff;margin-top:12px;border:1px solid #2a2d3a">uv run uvicorn fgc_flow_api.main:app --reload --port 8000</code>
+        <code class="start-cmd" style="display:inline-block;background:#1e2130;padding:8px 16px;border-radius:6px;font-family:monospace;font-size:.82rem;color:#7c8aff;margin-top:12px;border:1px solid #2a2d3a">./start.sh --flow</code>
         <br/>
         <button class="btn btn-outline" style="margin-top:16px" @click="simStore.checkHealth()">
           <i class="ri-restart-line"></i> Retry Connection
@@ -31,46 +31,22 @@
       </div>
     </div>
 
-    <div :class="['loader-content', { disabled: simStore.isBackendDown }]" style="max-width:900px">
+    <div v-if="!projectStore.activeProject && simStore.isBackendOnline" class="flow-down-overlay">
+      <div class="empty-state" style="background:#161922;border:2px solid #2a2d3a;border-radius:16px;padding:60px 20px">
+        <i class="ri-database-2-line" style="font-size:3rem;color:#6b7084;margin-bottom:12px"></i>
+        <h3>No Model Loaded</h3>
+        <p>Load a distribution system model on the <router-link to="/">Load Model</router-link> page first.</p>
+      </div>
+    </div>
+
+    <div :class="['loader-content', { disabled: simStore.isBackendDown }]" style="max-width:900px" v-if="projectStore.activeProject">
       <section class="sim-section">
         <div class="sim-section-header">
-          <h3><i class="ri-database-2-line"></i> Model Selection</h3>
-          <button class="btn btn-sm btn-outline" @click="triggerUpload">
-            <i class="ri-upload-cloud-2-line"></i> Upload Model
-          </button>
-          <input ref="fileInput" type="file" accept=".zip" hidden @change="handleUpload" />
-        </div>
-
-        <div v-if="uploading" class="sim-status-row">
-          <div class="spinner" style="width:20px;height:20px;border-width:3px;margin:0"></div>
-          <span style="color:#6b7084">Uploading model...</span>
-        </div>
-
-        <div v-if="!uploading && simStore.models.length > 0">
-          <div class="project-grid">
-            <div
-              v-for="model in simStore.models"
-              :key="model.model_id"
-              :class="['project-card', { active: simStore.selectedModelId === model.model_id }]"
-              @click="simStore.selectModel(model.model_id)"
-            >
-              <div class="project-card-name">{{ model.name }}</div>
-              <div class="project-card-desc">{{ formatSize(model.file_size) }}</div>
-              <div class="project-card-meta">Created {{ new Date(model.created_at).toLocaleDateString() }}</div>
-            </div>
-          </div>
-        </div>
-
-        <div v-if="!uploading && !simStore.models.length && simStore.isBackendOnline" class="sim-empty">
-          <i class="ri-inbox-line"></i>
-          <p>No models uploaded yet. Upload a .zip containing a distribution system JSON.</p>
-          <button class="btn btn-primary" @click="triggerUpload">
-            <i class="ri-upload-cloud-2-line"></i> Upload First Model
-          </button>
+          <h3><i class="ri-database-2-line"></i> Model: {{ projectStore.activeProject.name }}</h3>
         </div>
       </section>
 
-      <section v-if="simStore.selectedModelId" class="sim-section">
+      <section class="sim-section">
         <div class="sim-section-header">
           <h3><i class="ri-play-circle-line"></i> Run Simulation</h3>
         </div>
@@ -93,7 +69,7 @@
             <i v-else :class="solverIcon(selectedSolver)"></i>
             {{ simStore.running ? 'Running...' : 'Run ' + solverLabel(selectedSolver) }}
           </button>
-          <button class="btn btn-outline" :disabled="simStore.running || simStore.isBackendDown" @click="simStore.runCompare()">
+          <button class="btn btn-outline" :disabled="simStore.running || simStore.isBackendDown" @click="simStore.runCompare(buildConfig(true))">
             <i class="ri-scales-3-line"></i> Compare All Solvers
           </button>
         </div>
@@ -113,6 +89,36 @@
               <option :value="false">No</option>
               <option :value="true">Yes</option>
             </select>
+          </div>
+        </div>
+        <div class="powerflow-options-section">
+          <div class="powerflow-options-header">
+            <div>
+              <h4><i class="ri-gear-line"></i> Power Flow Options</h4>
+              <p>Control which components participate in the {{ solverLabel(selectedSolver) }} run.</p>
+            </div>
+          </div>
+          <div class="powerflow-options-grid">
+            <label
+              v-for="field in solverOptionDefinitions[selectedSolver]"
+              :key="field.key"
+              class="powerflow-option"
+            >
+              <template v-if="field.type === 'checkbox'">
+                <input type="checkbox" v-model="solverOptions[selectedSolver][field.key]" />
+                <span>{{ field.label }}</span>
+              </template>
+              <template v-else>
+                <span>{{ field.label }}</span>
+                <input
+                  type="number"
+                  :step="field.step || 0.1"
+                  :min="field.min"
+                  :max="field.max"
+                  v-model.number="solverOptions[selectedSolver][field.key]"
+                />
+              </template>
+            </label>
           </div>
         </div>
       </section>
@@ -215,19 +221,121 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, reactive, onMounted, onUnmounted } from 'vue'
 import { useSimulationStore } from '../stores/simulation'
+import { useProjectStore } from '../stores/project'
+import { modelsApi } from '../api/client'
 import { useToast } from '../composables/useToast'
-import type { SimulationSolverName, SimulationDispatchResponse, SimulationCompareResponse, SimulationBatchResponse } from '../types/simulation'
+import type {
+  SimulationSolverName,
+  SimulationDispatchResponse,
+  SimulationCompareResponse,
+  SimulationBatchResponse,
+  ACSolverConfig,
+  DCSolverConfig,
+  LinDistFlowConfig,
+  SolverConfig,
+} from '../types/simulation'
 
 const simStore = useSimulationStore()
+const projectStore = useProjectStore()
 const { toast } = useToast()
 
-const fileInput = ref<HTMLInputElement | null>(null)
-const uploading = ref(false)
 const selectedSolver = ref<SimulationSolverName>('ac-opf')
-
 const quickConfig = ref({ tolerance: 1e-6, max_iter: 300, verbose: false })
+type PowerflowOptionSet = Partial<ACSolverConfig & DCSolverConfig & LinDistFlowConfig>
+
+const solverOptions = reactive<Record<SimulationSolverName, PowerflowOptionSet>>({
+  'ac-opf': {
+    include_loads: true,
+    include_solar: true,
+    include_battery: true,
+    include_capacitor: true,
+    include_regulator_targets: false,
+    include_regulator_limits: false,
+    load_scale: 1,
+    solar_scale: 1,
+    battery_scale: 1,
+    capacitor_scale: 1,
+    include_neutral: true,
+    include_shunt: true,
+    convert_geometry_to_matrix: true,
+    vm_min_pu: 0.95,
+    vm_max_pu: 1.05,
+  },
+  'dc-opf': {
+    include_solar_generators: true,
+    include_battery_generators: true,
+    include_loads: true,
+    include_slack_generator: true,
+    include_neutral: true,
+    include_shunt: true,
+    convert_geometry_to_matrix: true,
+    slack_cost_linear: 1,
+    theta_min_rad: -1.57,
+    theta_max_rad: 1.57,
+    theta_penalty: 0,
+    maxiter: 300,
+  },
+  lindistflow: {
+    include_loads: true,
+    include_solar: true,
+    include_battery: true,
+    include_capacitor: true,
+    load_scale: 1,
+    solar_scale: 1,
+    battery_scale: 1,
+    capacitor_scale: 1,
+    include_neutral: true,
+    include_open_switches: false,
+  },
+})
+
+const solverOptionDefinitions: Record<
+  SimulationSolverName,
+  Array<{
+    key: keyof PowerflowOptionSet
+    label: string
+    type?: 'checkbox' | 'number'
+    step?: number
+    min?: number
+    max?: number
+    hint?: string
+  }>
+> = {
+  'ac-opf': [
+    { key: 'include_loads', label: 'Include loads', type: 'checkbox' },
+    { key: 'include_solar', label: 'Include solar generators', type: 'checkbox' },
+    { key: 'include_battery', label: 'Include battery generators', type: 'checkbox' },
+    { key: 'include_capacitor', label: 'Include capacitors', type: 'checkbox' },
+    { key: 'include_regulator_targets', label: 'Include regulator targets', type: 'checkbox' },
+    { key: 'include_regulator_limits', label: 'Include regulator limits', type: 'checkbox' },
+    { key: 'include_neutral', label: 'Model neutral conductors', type: 'checkbox' },
+    { key: 'include_shunt', label: 'Include shunt elements', type: 'checkbox' },
+    { key: 'convert_geometry_to_matrix', label: 'Convert geometry to matrix', type: 'checkbox' },
+    { key: 'load_scale', label: 'Load scale', type: 'number', step: 0.1, min: 0, max: 5 },
+    { key: 'solar_scale', label: 'Solar scale', type: 'number', step: 0.1, min: 0, max: 5 },
+  ],
+  'dc-opf': [
+    { key: 'include_loads', label: 'Include loads', type: 'checkbox' },
+    { key: 'include_solar_generators', label: 'Include solar generators', type: 'checkbox' },
+    { key: 'include_battery_generators', label: 'Include battery generators', type: 'checkbox' },
+    { key: 'include_slack_generator', label: 'Include slack generator', type: 'checkbox' },
+    { key: 'include_neutral', label: 'Model neutral conductors', type: 'checkbox' },
+    { key: 'include_shunt', label: 'Include shunt elements', type: 'checkbox' },
+    { key: 'convert_geometry_to_matrix', label: 'Convert geometry to matrix', type: 'checkbox' },
+  ],
+  lindistflow: [
+    { key: 'include_loads', label: 'Include loads', type: 'checkbox' },
+    { key: 'include_solar', label: 'Include solar generators', type: 'checkbox' },
+    { key: 'include_battery', label: 'Include battery generators', type: 'checkbox' },
+    { key: 'include_capacitor', label: 'Include capacitors', type: 'checkbox' },
+    { key: 'include_neutral', label: 'Model neutral conductors', type: 'checkbox' },
+    { key: 'include_open_switches', label: 'Include open switches', type: 'checkbox' },
+    { key: 'load_scale', label: 'Load scale', type: 'number', step: 0.1, min: 0, max: 5 },
+    { key: 'solar_scale', label: 'Solar scale', type: 'number', step: 0.1, min: 0, max: 5 },
+  ],
+}
 
 const isDispatchResult = computed(() => simStore.result && 'execution_mode' in simStore.result)
 const isCompareResult = computed(() => simStore.result && 'ac' in simStore.result && 'dc' in simStore.result)
@@ -240,18 +348,45 @@ function solverLabel(s: string): string { return solverLabels[s] || s }
 function solverIcon(s: string): string { return solverIcons[s] || 'ri-play-circle-line' }
 function solverResultIcon(s: string): string { return solverIcons[s] || 'ri-line-chart-line' }
 
-function buildConfig() {
-  return { tolerance: quickConfig.value.tolerance, max_iter: quickConfig.value.max_iter, verbose: quickConfig.value.verbose }
+function buildConfig(includeAllSolvers = false): SolverConfig {
+  const base: SolverConfig = {
+    tolerance: quickConfig.value.tolerance,
+    max_iter: quickConfig.value.max_iter,
+    verbose: quickConfig.value.verbose,
+  }
+
+  const acOptions = solverOptions['ac-opf'] as ACSolverConfig
+  const dcOptions = solverOptions['dc-opf'] as DCSolverConfig
+  const lindistOptions = solverOptions.lindistflow as LinDistFlowConfig
+
+  if (includeAllSolvers) {
+    base.ac = { ...acOptions }
+    base.dc = { ...dcOptions }
+    base.lindistflow = { ...lindistOptions }
+    return base
+  }
+
+  switch (selectedSolver.value) {
+    case 'ac-opf':
+      base.ac = { ...acOptions }
+      break
+    case 'dc-opf':
+      base.dc = { ...dcOptions }
+      break
+    case 'lindistflow':
+      base.lindistflow = { ...lindistOptions }
+      break
+  }
+
+  return base
 }
 
 async function runSelectedSolver() {
+  if (!simStore.selectedModelId) {
+    toast('No model synced. Please wait for sync to complete.', 'error')
+    return
+  }
   await simStore.runSimulation(selectedSolver.value, buildConfig())
-}
-
-function formatSize(bytes: number): string {
-  if (bytes < 1024) return bytes + ' B'
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
-  return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
 }
 
 function formatValue(val: unknown): string {
@@ -260,23 +395,17 @@ function formatValue(val: unknown): string {
   return String(val)
 }
 
-function triggerUpload() { fileInput.value?.click() }
-
-async function handleUpload(e: Event) {
-  const input = e.target as HTMLInputElement
-  const file = input.files?.[0]
-  if (!file) return
-  if (!file.name.endsWith('.zip')) { toast('Please upload a .zip file', 'error'); return }
-  uploading.value = true
+async function syncProjectModel(project: { id: string; name: string; file_path?: string }) {
+  if (!project.file_path) {
+    toast('Project has no file path. Re-select it on the Load Model page.', 'error')
+    return
+  }
   try {
-    await simStore.uploadModel(file, file.name.replace('.zip', ''))
-    toast('Model uploaded', 'success')
-  } catch (err: unknown) {
-    const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
-    toast(msg || 'Upload failed', 'error')
-  } finally {
-    uploading.value = false
-    input.value = ''
+    const { data } = await modelsApi.register(project.name, project.file_path)
+    simStore.models.unshift(data)
+    simStore.selectModel(data.model_id)
+  } catch {
+    toast('Failed to sync project with simulation backend', 'error')
   }
 }
 
@@ -287,9 +416,24 @@ async function copyResult() {
   } catch { toast('Copy failed', 'error') }
 }
 
+async function ensureProjectSynced() {
+  await projectStore.fetchProjects()
+  const project = projectStore.activeProject
+  if (!project) return
+
+  const alreadySynced = simStore.models.find((m) => m.name === project.name)
+  if (alreadySynced) {
+    simStore.selectModel(alreadySynced.model_id)
+    return
+  }
+
+  await syncProjectModel(project)
+}
+
 onMounted(async () => {
   simStore.startHealthPolling()
   await simStore.fetchModels()
+  await ensureProjectSynced()
 })
 
 onUnmounted(() => {
@@ -441,6 +585,56 @@ onUnmounted(() => {
   border: 1px solid #2a2d3a;
   border-radius: 10px;
   overflow: hidden;
+}
+
+.powerflow-options-section {
+  margin-top: 16px;
+  padding: 18px;
+  background: #1a1c28;
+  border: 1px solid #2a2d3a;
+  border-radius: 14px;
+}
+.powerflow-options-header h4 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 6px;
+  font-size: 0.95rem;
+  color: #f0f2f7;
+}
+.powerflow-options-header p {
+  margin: 0;
+  color: #8b8fa3;
+  font-size: 0.8rem;
+}
+.powerflow-options-grid {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+.powerflow-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #2e2f48;
+  background: #141625;
+  font-size: 0.82rem;
+}
+.powerflow-option input[type='number'] {
+  min-width: 70px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid #2a2d3a;
+  background: #0f111c;
+  color: #c5c9dd;
+}
+.powerflow-option input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
 }
 
 .disabled { opacity: 0.4; pointer-events: none; }

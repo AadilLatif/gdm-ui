@@ -21,10 +21,11 @@ import type {
   SimulationBatchResponse,
   JobStatusResponse,
   JobResultResponse,
+  SimulationSolverName,
 } from '../types/simulation'
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
+  baseURL: import.meta.env.VITE_API_URL || '',
 })
 
 // Attach auth token
@@ -172,12 +173,29 @@ export const modelsApi = {
     form.append('name', name)
     return api.post<ModelUploadResponse>('/api/models/upload', form)
   },
+  register: (name: string, filePath: string) => {
+    const form = new FormData()
+    form.append('name', name)
+    form.append('file_path', filePath)
+    return api.post<ModelUploadResponse>('/api/models/register', form)
+  },
+}
+
+const solverEndpoints: Record<SimulationSolverName, string> = {
+  'ac-opf': '/api/simulations/ac-opf',
+  'dc-opf': '/api/simulations/dc-opf',
+  lindistflow: '/api/simulations/lindistflow',
 }
 
 // ===== Simulations =====
 export const simulationsApi = {
-  dispatch: (data: SimulationRequest) =>
-    api.post<SimulationDispatchResponse>('/api/simulations/dispatch', data),
+  dispatch: (data: SimulationRequest) => {
+    const path = solverEndpoints[data.solver]
+    if (!path) {
+      throw new Error(`Unknown solver \"${data.solver}\"`)
+    }
+    return api.post<SimulationDispatchResponse>(path, data)
+  },
   compare: (data: SimulationCompareRequest) =>
     api.post<SimulationCompareResponse>('/api/simulations/compare', data),
   batch: (data: SimulationBatchRequest) =>
@@ -187,7 +205,7 @@ export const simulationsApi = {
 // ===== Jobs =====
 export const jobsApi = {
   status: (jobId: string) =>
-    api.get<JobStatusResponse>(`/api/jobs/${jobId}/status`),
+    api.get<JobStatusResponse>(`/api/jobs/${jobId}`),
   result: (jobId: string) =>
     api.get<JobResultResponse>(`/api/jobs/${jobId}/result`),
 }

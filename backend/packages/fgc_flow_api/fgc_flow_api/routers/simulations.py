@@ -36,7 +36,8 @@ async def _run_simulation(
     if body.solver != expected_solver:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Solver does not match endpoint")
     model = await get_model_for_user(flow_db, user.id, body.model_id)
-    if estimate_runtime_seconds(body) <= QUEUE_THRESHOLD_SECONDS:
+    runtime_estimate = estimate_runtime_seconds(body, model.file_size)
+    if runtime_estimate <= QUEUE_THRESHOLD_SECONDS:
         result = await run_simulation_request(model, body)
         return SimulationDispatchResponse(
             execution_mode="inline",
