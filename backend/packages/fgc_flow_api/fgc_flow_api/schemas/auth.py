@@ -1,5 +1,5 @@
-"""Pydantic request/response schemas for fgc_flow_api."""
-from fgc_flow_api.schemas.auth import (
+"""Pydantic request/response schemas for authentication."""
+from fgc_core.schemas.auth import (
     LoginRequest,
     RefreshRequest,
     RegisterRequest,
