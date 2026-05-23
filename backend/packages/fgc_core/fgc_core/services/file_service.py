@@ -27,11 +27,15 @@ def handle_zip_upload(file_content: bytes, original_filename: str, user_id: str)
             # Security: reject entries with absolute paths or path traversal
             for name in zf.namelist():
                 if name.startswith("/") or ".." in name:
+                    shutil.rmtree(project_dir, ignore_errors=True)
                     raise ValueError(f"Unsafe path in zip: {name}")
             zf.extractall(project_dir)
     except zipfile.BadZipFile:
         shutil.rmtree(project_dir)
         raise ValueError("Uploaded file is not a valid zip archive")
+    except ValueError:
+        shutil.rmtree(project_dir, ignore_errors=True)
+        raise
     finally:
         zip_path.unlink(missing_ok=True)
 
