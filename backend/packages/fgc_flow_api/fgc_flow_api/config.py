@@ -1,6 +1,12 @@
 from pathlib import Path
 
-from pydantic_settings import BaseSettings
+try:
+    from pydantic_settings import BaseSettings
+except ModuleNotFoundError:  # pragma: no cover - fallback for minimal test envs
+    from pydantic import BaseModel
+
+    class BaseSettings(BaseModel):
+        model_config = {"extra": "ignore"}
 
 
 class Settings(BaseSettings):
