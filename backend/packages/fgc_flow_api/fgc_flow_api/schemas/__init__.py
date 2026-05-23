@@ -13,6 +13,22 @@ from fgc_flow_api.schemas.jobs import (
     JobSubmissionRequest,
     JobSubmissionResponse,
 )
+from fgc_flow_api.schemas.models import (
+    ModelListItem,
+    ModelListResponse,
+    ModelResponse,
+    ModelUploadRequest,
+    ModelUploadResponse,
+)
+from fgc_flow_api.schemas.simulations import (
+    ACSolverConfig,
+    DCSolverConfig,
+    LinDistFlowConfig,
+    SimulationRequest,
+    SimulationResponse,
+    SimulationSolverName,
+    SolverConfig,
+)
 
 __all__ = [
     "LoginRequest",
@@ -23,5 +39,17 @@ __all__ = [
     "JobStatusResponse",
     "JobSubmissionRequest",
     "JobSubmissionResponse",
+    "ModelListItem",
+    "ModelListResponse",
+    "ModelResponse",
+    "ModelUploadRequest",
+    "ModelUploadResponse",
     "ErrorResponse",
+    "ACSolverConfig",
+    "DCSolverConfig",
+    "LinDistFlowConfig",
+    "SimulationRequest",
+    "SimulationResponse",
+    "SimulationSolverName",
+    "SolverConfig",
 ]
