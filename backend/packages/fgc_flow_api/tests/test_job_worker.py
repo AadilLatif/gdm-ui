@@ -39,7 +39,10 @@ def test_worker_transitions_pending_to_success(monkeypatch):
 
     async def fake_run_in_threadpool(fn, job):
         called["threadpool"] = True
-        return fn(job)
+        result = fn(job)
+        if asyncio.iscoroutine(result):
+            return await result
+        return result
 
     monkeypatch.setattr("fgc_flow_api.services.job_worker.get_jobs_db", fake_get_jobs_db)
     monkeypatch.setattr("fgc_flow_api.services.job_worker.run_in_threadpool", fake_run_in_threadpool)

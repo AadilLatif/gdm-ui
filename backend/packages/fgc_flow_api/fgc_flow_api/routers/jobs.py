@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fgc_flow_api.database import get_jobs_db
 from fgc_flow_api.dependencies import get_current_user
 from fgc_flow_api.models import Job
+from fgc_flow_api.services.job_cache import get_cached_result
 from fgc_flow_api.schemas.jobs import (
     JobResultResponse,
     JobStatusResponse,
@@ -80,4 +81,11 @@ async def get_job_result(
     job = result.scalar_one_or_none()
     if job is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found")
+    cached_result = await get_cached_result(db, job.model_version_id, job.params)
+    if cached_result is not None and cached_result.result_json is not None:
+        return JobResultResponse(
+            job_id=job.id,
+            result_json=cached_result.result_json,
+            result_path=cached_result.result_path or job.result_path,
+        )
     return JobResultResponse(job_id=job.id, result_json=None, result_path=job.result_path)

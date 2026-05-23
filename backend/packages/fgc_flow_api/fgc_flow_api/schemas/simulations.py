@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -86,3 +86,14 @@ class SimulationResponse(BaseModel):
     solver: SimulationSolverName
     config: SolverConfig
     result: dict[str, Any]
+
+
+class SimulationDispatchResponse(BaseModel):
+    execution_mode: Literal["inline", "queued"]
+    status: str
+    model_id: str
+    solver: SimulationSolverName
+    config: SolverConfig
+    job_id: str | None = None
+    result: dict[str, Any] | None = None
+    result_path: str | None = None
