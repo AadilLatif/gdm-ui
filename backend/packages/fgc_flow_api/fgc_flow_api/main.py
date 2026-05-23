@@ -5,10 +5,11 @@ from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+
 from fgc_flow_api.config import settings
 from fgc_flow_api.database import init_jobs_db
 from fgc_flow_api.exceptions import FGCFlowException
-from fgc_flow_api.routers import auth_router
+from fgc_flow_api.routers import auth_router, jobs_router
 from fgc_flow_api.schemas.error import ErrorResponse
 
 
@@ -39,6 +40,7 @@ app.add_middleware(
 
 # ── Routers ───────────────────────────────────────────────────────────
 app.include_router(auth_router)
+app.include_router(jobs_router)
 
 # ── Global Exception Handlers ─────────────────────────────────────────
 
