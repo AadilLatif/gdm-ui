@@ -104,7 +104,7 @@ async def register_model(
     return ModelUploadResponse(model_id=model.id, name=model.name, file_size=model.file_size, created_at=model.created_at)
 
 
-@router.get("", response_model=list[ModelListItem])
+@router.get("/", response_model=list[ModelListItem])
 async def list_models(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_flow_db),
