@@ -10,9 +10,22 @@ import type {
   Topology,
   EquipmentCategories,
 } from '../types/api'
+import type {
+  ModelListItem,
+  ModelUploadResponse,
+  SimulationRequest,
+  SimulationCompareRequest,
+  SimulationBatchRequest,
+  SimulationDispatchResponse,
+  SimulationCompareResponse,
+  SimulationBatchResponse,
+  JobStatusResponse,
+  JobResultResponse,
+  SimulationSolverName,
+} from '../types/simulation'
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
+  baseURL: import.meta.env.VITE_API_URL || '',
 })
 
 // Attach auth token
@@ -149,6 +162,57 @@ export interface ScenarioTimeline {
   scenario_name: string
   filename: string
   steps: ScenarioTimelineStep[]
+}
+
+// ===== Models =====
+export const modelsApi = {
+  list: () => api.get<ModelListItem[]>('/api/models/'),
+  upload: (file: File, name: string) => {
+    const form = new FormData()
+    form.append('file', file)
+    form.append('name', name)
+    return api.post<ModelUploadResponse>('/api/models/upload', form)
+  },
+  register: (name: string, filePath: string) => {
+    const form = new FormData()
+    form.append('name', name)
+    form.append('file_path', filePath)
+    return api.post<ModelUploadResponse>('/api/models/register', form)
+  },
+}
+
+const solverEndpoints: Record<SimulationSolverName, string> = {
+  'ac-opf': '/api/simulations/ac-opf',
+  'dc-opf': '/api/simulations/dc-opf',
+  lindistflow: '/api/simulations/lindistflow',
+}
+
+// ===== Simulations =====
+export const simulationsApi = {
+  dispatch: (data: SimulationRequest) => {
+    const path = solverEndpoints[data.solver]
+    if (!path) {
+      throw new Error(`Unknown solver \"${data.solver}\"`)
+    }
+    return api.post<SimulationDispatchResponse>(path, data)
+  },
+  compare: (data: SimulationCompareRequest) =>
+    api.post<SimulationCompareResponse>('/api/simulations/compare', data),
+  batch: (data: SimulationBatchRequest) =>
+    api.post<SimulationBatchResponse>('/api/simulations/batch', data),
+}
+
+// ===== Jobs =====
+export const jobsApi = {
+  status: (jobId: string) =>
+    api.get<JobStatusResponse>(`/api/jobs/${jobId}`),
+  result: (jobId: string) =>
+    api.get<JobResultResponse>(`/api/jobs/${jobId}/result`),
+}
+
+// ===== Health =====
+export const healthApi = {
+  check: () => api.get<{ status: string }>('/api/health'),
 }
 
 export default api

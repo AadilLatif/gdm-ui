@@ -22,6 +22,10 @@
           <i class="ri-time-line"></i>
           <span>Scenarios</span>
         </router-link>
+        <router-link to="/simulations" class="nav-item">
+          <i class="ri-flashlight-line"></i>
+          <span>Simulations</span>
+        </router-link>
       </nav>
       <div class="sidebar-footer">
         <div v-if="projectStore.activeProject" class="system-badge">

@@ -10,6 +10,7 @@ class ProjectResponse(BaseModel):
     is_active: bool
     created_at: datetime
     owner_id: str
+    file_path: str | None = None
 
     model_config = {"from_attributes": True}
 

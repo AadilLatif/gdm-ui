@@ -8,6 +8,7 @@ from typing import Any
 
 import numpy as np
 from fastapi.concurrency import run_in_threadpool
+from scipy.sparse import spmatrix
 
 from fgc_flow_api.models import Model
 from fgc_flow_api.schemas.simulations import (
@@ -31,6 +32,8 @@ def _serialize_value(value: Any) -> Any:
         return [_serialize_value(item) for item in value.tolist()]
     if isinstance(value, np.generic):
         return _serialize_value(value.item())
+    if isinstance(value, spmatrix):
+        return [_serialize_value(item) for item in value.toarray().tolist()]
     if isinstance(value, complex):
         return {"real": value.real, "imag": value.imag}
     if isinstance(value, dict):

@@ -26,6 +26,7 @@ const router = createRouter({
         { path: 'warehouse', name: 'warehouse', component: () => import('../views/WarehouseView.vue') },
         { path: 'network', name: 'network', component: () => import('../views/NetworkView.vue') },
         { path: 'scenarios', name: 'scenarios', component: () => import('../views/ScenariosView.vue') },
+        { path: 'simulations', name: 'simulations', component: () => import('../views/SimulationView.vue') },
       ],
     },
   ],

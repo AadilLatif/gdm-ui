@@ -21,6 +21,9 @@ backend/packages/fgc_core/*.db
 # Data
 data/
 
+# Local database snapshots that should stay outside the repo
+backend/home/
+
 # Frontend build
 frontend/dist/
 frontend/node_modules/

@@ -8,6 +8,7 @@ from pathlib import Path
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from pathlib import Path
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -78,7 +79,32 @@ async def upload_model(
     return ModelUploadResponse(model_id=model.id, name=model.name, file_size=model.file_size, created_at=model.created_at)
 
 
-@router.get("", response_model=list[ModelListItem])
+@router.post("/register", response_model=ModelUploadResponse, status_code=status.HTTP_201_CREATED)
+async def register_model(
+    name: str = Form(...),
+    file_path: str = Form(...),
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_flow_db),
+):
+    file_path_obj = Path(file_path)
+    if not file_path_obj.exists():
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File not found")
+    if not file_path_obj.is_file():
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Path is not a file")
+
+    model = Model(
+        user_id=user.id,
+        name=name or file_path_obj.stem,
+        file_path=str(file_path_obj),
+        file_size=file_path_obj.stat().st_size,
+    )
+    db.add(model)
+    await db.commit()
+    await db.refresh(model)
+    return ModelUploadResponse(model_id=model.id, name=model.name, file_size=model.file_size, created_at=model.created_at)
+
+
+@router.get("/", response_model=list[ModelListItem])
 async def list_models(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_flow_db),
