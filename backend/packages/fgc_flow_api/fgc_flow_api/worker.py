@@ -6,6 +6,7 @@ import asyncio
 import logging
 import signal
 
+from fgc_flow_api.database import init_flow_db, init_jobs_db
 from fgc_flow_api.services import JobWorker
 
 logger = logging.getLogger("fgc_flow_api.worker")
@@ -31,6 +32,8 @@ async def _wait_for_shutdown(shutdown_event: asyncio.Event) -> None:
 
 async def main() -> None:
     logging.basicConfig(level=logging.INFO, format="[fgc-flow-worker] %(asctime)s %(message)s")
+    await init_flow_db()
+    await init_jobs_db()
     worker = JobWorker()
     shutdown_event = asyncio.Event()
     task = asyncio.create_task(_run_worker_loop(worker))

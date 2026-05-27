@@ -4,11 +4,16 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 FLOW_MODE=false
+DEV_MODE=false
 for arg in "$@"; do
   case "$arg" in
     --flow) FLOW_MODE=true ;;
+    --dev) DEV_MODE=true ;;
   esac
 done
+
+RELOAD_FLAG=""
+[ "$DEV_MODE" = true ] && RELOAD_FLAG="--reload"
 
 cleanup() {
   echo ""
@@ -41,7 +46,7 @@ export GDM_UPLOAD_DIR="/home/aadil/Documents/gfc_files/uploads"
 export GDM_DATABASE_URL="sqlite+aiosqlite:///home/aadil/Documents/gfc_files/database/gdm_studio.db"
 mkdir -p "$GDM_UPLOAD_DIR"
 mkdir -p "/home/aadil/Documents/gfc_files/database"
-"$SCRIPT_DIR/.venv/bin/python" -m uvicorn fgc_core.main:app --host 0.0.0.0 --port 8000 --reload &
+"$SCRIPT_DIR/.venv/bin/python" -m uvicorn fgc_core.main:app --host 0.0.0.0 --port 8000 $RELOAD_FLAG &
 BACKEND_PID=$!
 
 # ── Flow Backend (optional) ──────────────────────────────
@@ -52,7 +57,7 @@ if [ "$FLOW_MODE" = true ]; then
   export FGC_FLOW_JOBS_DATABASE_URL="sqlite+aiosqlite:///home/aadil/Documents/gfc_files/database/fgc_flow_jobs.db"
   mkdir -p "$FGC_FLOW_UPLOAD_DIR"
   mkdir -p "/home/aadil/Documents/gfc_files/database"
-  "$SCRIPT_DIR/.venv/bin/python" -m uvicorn fgc_flow_api.main:app --host 0.0.0.0 --port 8001 --reload &
+  "$SCRIPT_DIR/.venv/bin/python" -m uvicorn fgc_flow_api.main:app --host 0.0.0.0 --port 8001 $RELOAD_FLAG &
   FLOW_PID=$!
   echo "Starting simulation job worker..."
   "$SCRIPT_DIR/.venv/bin/python" -m fgc_flow_api.worker &
@@ -60,10 +65,10 @@ if [ "$FLOW_MODE" = true ]; then
 fi
 
 # ── Frontend ─────────────────────────────────────────────
-echo "Starting frontend (Vite)  on http://localhost:5173 ..."
+echo "Starting frontend (Vite)  on http://0.0.0.0:5173 ..."
 cd "$SCRIPT_DIR/frontend"
 export VITE_API_URL=""
-npm run dev &
+npm run dev -- --host 0.0.0.0 &
 FRONTEND_PID=$!
 
 echo ""
